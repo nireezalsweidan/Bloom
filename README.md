@@ -53,7 +53,7 @@ Clone the repository:
 
 ```bash
 git clone https://github.com/nireezalsweidan/Bloom
-cd Bloom-FinalProject
+cd bloom
 ```
 
 Create and activate a virtual environment:

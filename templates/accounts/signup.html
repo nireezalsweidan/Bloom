@@ -1,7 +1,701 @@
-{# templates/accounts/signup.html #}
-<h2>Sign Up</h2>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Create account</button>
-</form>
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Bloom – Create Your Account</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet"
+  >
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['"Playfair Display"', 'Georgia', 'serif'],
+            sans: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            botanical: {
+              50: '#F4F8F5',
+              100: '#E5F0E8',
+              200: '#C8DEC0',
+              300: '#A1C3B2',
+              400: '#6B8A7A',
+              500: '#476957',
+              600: '#325342',
+              700: '#234133',
+              800: '#1B382B',
+              900: '#12251D',
+            },
+            ivory: {
+              50: '#FDFBF7',
+              100: '#FAF7F2',
+              200: '#F3EDE2',
+              300: '#EBE2D3',
+            },
+            blush: {
+              50: '#FDF7F7',
+              100: '#FAF0F0',
+              200: '#F5E1DF',
+              300: '#EBBFB9',
+              400: '#D98880',
+              500: '#C66C63',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #FAF7F2;
+      color: #1B382B;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .custom-shadow {
+      box-shadow:
+        0 20px 40px -15px rgba(27, 56, 43, 0.07),
+        0 0 1px 1px rgba(27, 56, 43, 0.05);
+    }
+
+    /* Make Django-generated fields match the Bloom design */
+    .bloom-input {
+      width: 100%;
+      padding: 0.625rem 1rem;
+      background: white;
+      border: 1px solid #C8DEC0;
+      border-radius: 0.75rem;
+      font-size: 0.875rem;
+      color: #1B382B;
+      outline: none;
+      transition: all 0.2s;
+      box-sizing: border-box;
+    }
+
+    .bloom-input:focus {
+      border-color: #476957;
+      box-shadow: 0 0 0 3px rgba(107, 138, 122, 0.25);
+    }
+
+    .field-error {
+      color: #C66C63;
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+      font-weight: 500;
+    }
+
+    .help-text {
+      color: #6B8A7A;
+      font-size: 0.7rem;
+      margin-top: 0.25rem;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-[#FAF7F2] text-[#1B382B] flex flex-col">
+
+  <!-- Announcement Banner -->
+  <header
+    class="w-full bg-[#1B382B] text-[#FAF7F2] text-xs py-2.5 px-4
+           text-center tracking-wider font-medium flex items-center justify-center gap-2"
+  >
+    <svg
+      class="w-3.5 h-3.5 text-[#C8DEC0]"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707
+           M6.343 6.343l-.707-.707m12.728 0l-.707.707
+           M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0
+           4 4 0 018 0z"
+      />
+    </svg>
+
+    <span>
+      JOIN THE ATELIER BOTANICAL CIRCLE • RECEIVE $15 TOWARD YOUR FIRST BESPOKE CURATION
+    </span>
+  </header>
+
+
+  <!-- Navigation -->
+  <nav class="max-w-7xl mx-auto w-full px-6 py-5 flex items-center justify-between">
+
+    <a href="/" class="flex items-center gap-3">
+      <img
+        src="https://lh3.googleusercontent.com/aida/AEtjO1UHHADnw7B2Jk7t-4im7HB86kxrcoNuBakwvmvmT7V5p-R3P7j4yNi_r2dCIkOaancmOe7joIYP3mws5mhrFtqQ5UxzV0VsMTo1zU5CBHumhs_p2l5-8cQh_w-iO1zt1tQ5-DGiIJM6ynivkGonMz8qFq13eYEd_3qtFQGoSer-XWM97HxI2v6bEYh-C4mU2EXb4gbwBoEZg4YVtOgktK37qbF_IRLf9ileR9bE0Pd7sVXcb0u1p9yXFy4"
+        alt="Bloom Atelier Logo"
+        class="h-9 w-auto object-contain"
+      >
+    </a>
+
+    <div class="flex items-center gap-6 text-sm font-medium">
+
+      <span
+        class="hidden sm:inline-flex items-center gap-2 text-xs uppercase
+               tracking-widest text-[#6B8A7A] bg-[#E5F0E8]/70 px-3 py-1.5
+               rounded-full border border-[#C8DEC0]/60"
+      >
+        <span class="w-2 h-2 rounded-full bg-[#D98880]"></span>
+        Membership Sanctuary
+      </span>
+
+      <a
+        href="/"
+        class="text-[#6B8A7A] hover:text-[#1B382B] transition-colors
+               text-xs font-semibold tracking-wider uppercase flex items-center gap-1.5"
+      >
+        <svg
+          class="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.8"
+            d="M10 19l-7-7m0 0l7-7m-7 7h18"
+          />
+        </svg>
+        Return to Shop
+      </a>
+
+    </div>
+  </nav>
+
+
+  <!-- Main -->
+  <main
+    class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8
+           py-6 md:py-8 flex items-center justify-center"
+  >
+
+    <div
+      class="w-full grid grid-cols-1 lg:grid-cols-12
+             bg-white/85 backdrop-blur-md rounded-3xl
+             border border-[#EBE2D3]/70 custom-shadow overflow-hidden"
+    >
+
+      <!-- LEFT SIDE -->
+      <div
+        class="lg:col-span-5 relative min-h-[420px] lg:min-h-[720px]
+               p-6 lg:p-10 flex flex-col justify-between overflow-hidden group"
+      >
+
+        <img
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuCd612FmDBjRrfQhlXHDUPNGx0KaPJPYjWLV8H2mGuMgUvKPivSla39ZHNblBH4mcfQ3yVY4FwxtN78ZNpqNeAxX5JdHa-estvveOAs11iVVNEvepImrvU8mjMVBtJdcJF5KcPKn8NPsBehtd95J2n84-lx-WKQFrbTT8IgVn4mNblHjYTbKlGGNBOTcpQkVTsxZs9N7P5xegZkR7rFNMd8UxffQ_tlMPJNVsSg0adhOdvTJVBCL-ZX"
+          alt="Botanical Flat Lay Composition"
+          class="absolute inset-0 w-full h-full object-cover
+                 object-center transition-transform duration-700
+                 ease-out group-hover:scale-105"
+        >
+
+        <div class="absolute inset-0 bg-gradient-to-t from-[#1B382B]/90 via-[#1B382B]/40 to-transparent"></div>
+        <div class="absolute inset-0 bg-[#234133]/15 mix-blend-multiply"></div>
+
+
+        <!-- Badge -->
+        <div class="relative z-10 flex justify-between items-center">
+
+          <div
+            class="inline-flex items-center gap-2 bg-[#FAF7F2]/90
+                   backdrop-blur-md px-3.5 py-1.5 rounded-full
+                   border border-white/50 text-[#1B382B] text-xs
+                   font-medium tracking-wide shadow-sm"
+          >
+            <span class="w-2 h-2 rounded-full bg-[#476957]"></span>
+            <span>Artisanal Botanical Atelier</span>
+          </div>
+
+          <span
+            class="text-[11px] font-semibold text-white/90 bg-white/20
+                   backdrop-blur-md px-3 py-1 rounded-full
+                   border border-white/30 tracking-widest uppercase"
+          >
+            Privilege
+          </span>
+
+        </div>
+
+
+        <!-- Narrative -->
+        <div class="relative z-10 mt-auto text-white pt-10">
+
+          <div
+            class="inline-block bg-[#D98880]/30 backdrop-blur-sm
+                   text-[#FAF7F2] border border-[#D98880]/40
+                   px-3 py-1 rounded-full text-[11px] font-semibold
+                   tracking-wider uppercase mb-3"
+          >
+            Pure Botanical Craft
+          </div>
+
+          <h2
+            class="font-serif text-2xl lg:text-3xl leading-snug
+                   font-normal text-[#FAF7F2]"
+          >
+            "Flowers for every moment, beautifully made."
+          </h2>
+
+          <div
+            class="mt-6 pt-5 border-t border-white/20
+                   space-y-2 text-xs text-[#FAF7F2]/90"
+          >
+
+            <div class="flex items-center gap-2.5">
+              <div
+                class="w-4 h-4 rounded-full bg-[#C8DEC0]/30
+                       flex items-center justify-center text-[#C8DEC0] text-[10px]"
+              >
+                ✓
+              </div>
+              <span>Saved AI Bouquet recipes & fragrance profiles</span>
+            </div>
+
+            <div class="flex items-center gap-2.5">
+              <div
+                class="w-4 h-4 rounded-full bg-[#C8DEC0]/30
+                       flex items-center justify-center text-[#C8DEC0] text-[10px]"
+              >
+                ✓
+              </div>
+              <span>Priority dawn cut & chilled courier delivery</span>
+            </div>
+
+            <div class="flex items-center gap-2.5">
+              <div
+                class="w-4 h-4 rounded-full bg-[#C8DEC0]/30
+                       flex items-center justify-center text-[#C8DEC0] text-[10px]"
+              >
+                ✓
+              </div>
+              <span>Custom letterpress calligraphy notes on handmade rag paper</span>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+
+      <!-- RIGHT SIDE -->
+      <div
+        class="lg:col-span-7 p-8 sm:p-12 lg:p-14
+               flex flex-col justify-center bg-[#FAF7F2]/30"
+      >
+
+        <div class="max-w-lg w-full mx-auto">
+
+
+          <!-- Heading -->
+          <div class="text-center sm:text-left mb-6">
+
+            <div
+              class="inline-flex items-center gap-1.5 text-xs font-semibold
+                     tracking-widest uppercase text-[#6B8A7A] mb-1.5"
+            >
+              <svg
+                class="w-3.5 h-3.5 text-[#D98880]"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
+              </svg>
+              New Client Registration
+            </div>
+
+            <h1
+              class="font-serif text-3xl sm:text-4xl
+                     text-[#1B382B] font-semibold tracking-tight"
+            >
+              Create your Bloom account
+            </h1>
+
+            <p class="mt-2 text-sm text-[#476957]/80 leading-relaxed">
+              Join Bloom and create bouquets made for every special moment.
+            </p>
+
+          </div>
+
+
+          <!-- Django FORM -->
+          <form method="post" class="space-y-4" novalidate>
+
+            {% csrf_token %}
+
+
+            <!-- General errors -->
+            {% if form.non_field_errors %}
+              <div
+                class="p-3 rounded-xl bg-[#FAF0F0]
+                       border border-[#EBBFB9] text-[#C66C63] text-sm"
+              >
+                {% for error in form.non_field_errors %}
+                  <p>{{ error }}</p>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+
+            <!-- FULL NAME -->
+            <div>
+
+              <label
+                for="{{ form.username.id_for_label }}"
+                class="block text-xs font-semibold uppercase
+                       tracking-wider text-[#234133] mb-1.5"
+              >
+                Username
+              </label>
+
+              {{ form.username.as_widget|safe }}
+
+              {% if form.username.errors %}
+                <div class="field-error">
+                  {% for error in form.username.errors %}
+                    <p>⚠ {{ error }}</p>
+                  {% endfor %}
+                </div>
+              {% endif %}
+
+            </div>
+
+
+            <!-- EMAIL -->
+            <div>
+
+              <label
+                for="{{ form.email.id_for_label }}"
+                class="block text-xs font-semibold uppercase
+                       tracking-wider text-[#234133] mb-1.5"
+              >
+                Email Address
+              </label>
+
+              {{ form.email.as_widget|safe }}
+
+              {% if form.email.errors %}
+                <div class="field-error">
+                  {% for error in form.email.errors %}
+                    <p>⚠ {{ error }}</p>
+                  {% endfor %}
+                </div>
+              {% endif %}
+
+            </div>
+
+
+            <!-- PASSWORDS -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+              <!-- Password -->
+              <div>
+
+                <label
+                  for="{{ form.password1.id_for_label }}"
+                  class="block text-xs font-semibold uppercase
+                         tracking-wider text-[#234133] mb-1.5"
+                >
+                  Password
+                </label>
+
+                <div class="relative">
+                  {{ form.password1.as_widget|safe }}
+
+                  <button
+                    type="button"
+                    onclick="togglePassword('{{ form.password1.id_for_label }}', this)"
+                    class="absolute inset-y-0 right-0 pr-3
+                           flex items-center text-[#6B8A7A]
+                           hover:text-[#1B382B]"
+                  >
+                    👁
+                  </button>
+                </div>
+
+                {% if form.password1.errors %}
+                  <div class="field-error">
+                    {% for error in form.password1.errors %}
+                      <p>⚠ {{ error }}</p>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+
+              </div>
+
+
+              <!-- Confirm Password -->
+              <div>
+
+                <label
+                  for="{{ form.password2.id_for_label }}"
+                  class="block text-xs font-semibold uppercase
+                         tracking-wider text-[#234133] mb-1.5"
+                >
+                  Confirm Password
+                </label>
+
+                <div class="relative">
+                  {{ form.password2.as_widget|safe }}
+
+                  <button
+                    type="button"
+                    onclick="togglePassword('{{ form.password2.id_for_label }}', this)"
+                    class="absolute inset-y-0 right-0 pr-3
+                           flex items-center text-[#6B8A7A]
+                           hover:text-[#1B382B]"
+                  >
+                    👁
+                  </button>
+                </div>
+
+                {% if form.password2.errors %}
+                  <div class="field-error">
+                    {% for error in form.password2.errors %}
+                      <p>⚠ {{ error }}</p>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+
+              </div>
+
+            </div>
+
+
+            <!-- TERMS -->
+            <div class="pt-2">
+
+              <label class="flex items-start gap-2.5 cursor-pointer select-none">
+
+                <input
+                  type="checkbox"
+                  name="agree_terms"
+                  id="agreeTerms"
+                  required
+                  class="mt-0.5 w-4 h-4 rounded
+                         border-[#C8DEC0] text-[#1B382B]
+                         focus:ring-[#6B8A7A]
+                         accent-[#1B382B]"
+                >
+
+                <span class="text-xs text-[#476957] leading-relaxed">
+                  I agree to Bloom Atelier's
+                  <a
+                    href="#"
+                    class="text-[#1B382B] underline
+                           decoration-[#C8DEC0]"
+                  >
+                    Terms of Service
+                  </a>
+                  and
+                  <a
+                    href="#"
+                    class="text-[#1B382B] underline
+                           decoration-[#C8DEC0]"
+                  >
+                    Privacy Policy
+                  </a>.
+                </span>
+
+              </label>
+
+            </div>
+
+
+            <!-- SUBMIT -->
+            <div class="pt-2">
+
+              <button
+                type="submit"
+                class="w-full py-3.5 px-6
+                       bg-[#1B382B] hover:bg-[#234133]
+                       text-[#FAF7F2] font-medium text-sm
+                       rounded-xl tracking-wide shadow-md
+                       transition-all duration-200
+                       flex items-center justify-center gap-2"
+              >
+                Create Account
+              </button>
+
+            </div>
+
+
+            <!-- OR -->
+            <div class="relative flex items-center justify-center my-3">
+
+              <div class="border-t border-[#EBE2D3] w-full"></div>
+
+              <span
+                class="bg-[#FAF7F2] px-3 text-xs text-[#6B8A7A]
+                       uppercase tracking-widest font-serif italic"
+              >
+                or
+              </span>
+
+              <div class="border-t border-[#EBE2D3] w-full"></div>
+
+            </div>
+
+
+            <!-- GOOGLE -->
+            <button
+              type="button"
+              class="w-full py-2.5 px-4 bg-white
+                     hover:bg-[#F4F8F5]
+                     border border-[#C8DEC0]
+                     text-[#1B382B] text-xs font-semibold
+                     rounded-xl tracking-wider
+                     transition-all duration-200
+                     flex items-center justify-center gap-3 shadow-sm"
+            >
+
+              <svg class="w-4 h-4" viewBox="0 0 24 24">
+                <path
+                  fill="#4285F4"
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92
+                     c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57
+                     c2.08-1.92 3.28-4.74 3.28-8.09z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77
+                     c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53
+                     H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09
+                     V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94
+                     l2.85-2.22.81-.63z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15
+                     C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06
+                     l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                />
+              </svg>
+
+              <span>Continue with Google</span>
+
+            </button>
+
+
+            <!-- SIGN IN -->
+            <div class="text-center pt-3 border-t border-[#EBE2D3]/60">
+
+              <p class="text-xs text-[#476957]">
+
+                Already have an account?
+
+                <a
+                  href="{% url 'login' %}"
+                  class="font-semibold text-[#1B382B]
+                         hover:text-[#6B8A7A]
+                         underline underline-offset-4
+                         decoration-[#C8DEC0]"
+                >
+                  Sign in
+                </a>
+
+              </p>
+
+            </div>
+
+          </form>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+
+  <!-- Footer -->
+  <footer
+    class="w-full border-t border-[#EBE2D3]
+           bg-[#F4F8F5]/70 py-6 px-6 mt-8"
+  >
+
+    <div
+      class="max-w-6xl mx-auto flex flex-col sm:flex-row
+             items-center justify-between gap-4
+             text-xs text-[#476957]"
+    >
+
+      <div class="flex items-center gap-6">
+
+        <span class="flex items-center gap-1.5">
+          🔒
+          Bank-Grade Privacy & AES-256 Protection
+        </span>
+
+        <span class="hidden sm:flex items-center gap-1.5">
+          ✓
+          Complimentary Artisan Consultation Included
+        </span>
+
+      </div>
+
+      <div class="text-[11px] text-[#6B8A7A]">
+        © 2026 Bloom Atelier SARL. Handcrafted with botanical precision.
+      </div>
+
+    </div>
+
+  </footer>
+
+
+  <!-- Password visibility -->
+  <script>
+    function togglePassword(inputId, button) {
+      const input = document.getElementById(inputId);
+
+      if (input.type === "password") {
+        input.type = "text";
+        button.innerText = "🙈";
+      } else {
+        input.type = "password";
+        button.innerText = "👁";
+      }
+    }
+
+    // Add Bloom styling to Django-generated form fields
+    document.addEventListener("DOMContentLoaded", function () {
+      const fields = document.querySelectorAll(
+        "input[type='text'], input[type='email'], input[type='password']"
+      );
+
+      fields.forEach(function (field) {
+        field.classList.add("bloom-input");
+      });
+    });
+  </script>
+
+</body>
+</html>

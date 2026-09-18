@@ -1,0 +1,8 @@
+<h1>Welcome to Bloom</h1>
+{% if user.is_authenticated %}
+  <p>Hello, {{ user.username }} ({{ user.role }})</p>
+  <a href="{% url 'logout' %}">Log out</a>
+{% else %}
+  <a href="{% url 'login' %}">Log in</a> |
+  <a href="{% url 'signup' %}">Sign up</a>
+{% endif %}

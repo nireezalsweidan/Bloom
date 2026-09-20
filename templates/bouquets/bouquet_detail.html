@@ -1,0 +1,12 @@
+<a href="{% url 'bouquets:bouquet_list' %}">&larr; Back to my bouquets</a>
+<h2>{{ bouquet.get_occasion_display }} Bouquet</h2>
+<p><strong>Style:</strong> {{ bouquet.get_style_display }}</p>
+<p><strong>Status:</strong> {{ bouquet.get_status_display }} | <strong>Source:</strong> {{ bouquet.get_source_display }}</p>
+<ul>
+{% for bi in bouquet.items.all %}
+  <li>{{ bi.quantity }} x {{ bi.item.name }} — ${{ bi.subtotal }}</li>
+{% endfor %}
+</ul>
+{% if bouquet.greeting_card %}<p><strong>Card:</strong> {{ bouquet.greeting_card.name }}</p>{% endif %}
+{% if bouquet.card_message %}<p><strong>Message:</strong> "{{ bouquet.card_message }}"</p>{% endif %}
+<p><strong>Total:</strong> ${{ bouquet.price }}</p>

@@ -1,8 +1,230 @@
-<h1>Welcome to Bloom</h1>
-{% if user.is_authenticated %}
-  <p>Hello, {{ user.username }} ({{ user.role }})</p>
-  <a href="{% url 'logout' %}">Log out</a>
-{% else %}
-  <a href="{% url 'login' %}">Log in</a> |
-  <a href="{% url 'signup' %}">Sign up</a>
+{% extends "base.html" %}
+{% block content %}
+
+<section class="relative w-full max-w-[1320px] mx-auto px-margin-mobile lg:px-margin py-space-lg lg:py-space-xl">
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg lg:gap-space-xl items-center">
+    <div class="lg:col-span-6 flex flex-col items-start z-10">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface-container-high text-primary mb-space-md shadow-sm">
+        <span class="material-symbols-outlined text-sm text-secondary">eco</span>
+        <span class="font-label-sm text-label-sm tracking-wider uppercase font-semibold">Haute Botanique</span>
+      </div>
+      <h1 class="font-display-hero text-display-hero text-primary tracking-tight font-normal mb-space-md leading-none">
+        Flowers Made <br><span class="italic font-normal text-secondary">Personal.</span>
+      </h1>
+      <p class="font-body-lg text-body-lg text-on-surface-variant max-w-lg mb-space-lg">
+        Compose bespoke bouquets tailored to your occasion, hand-picked stem by stem.
+      </p>
+      <div class="flex flex-wrap items-center gap-3.5 mb-space-lg w-full sm:w-auto">
+        <a class="px-7 py-3.5 rounded-full bg-primary text-on-primary font-title-sm text-title-sm font-medium hover:bg-primary-container transition-all transform hover:-translate-y-0.5 shadow-md flex items-center gap-2" href="{% url 'bouquets:design_new' %}">
+          <span>Create Your Bouquet</span><span class="material-symbols-outlined text-sm">arrow_forward</span>
+        </a>
+        <a class="px-6 py-3.5 rounded-full bg-surface-container-low text-primary font-title-sm text-title-sm font-medium hover:bg-surface-container transition-all flex items-center gap-2 shadow-sm" href="#" onclick="alert('The AI Floral Designer is coming soon! Try the Bouquet Studio in the meantime.'); return false;">
+          <span class="material-symbols-outlined text-secondary-fixed-dim text-base">auto_awesome</span><span>Explore AI Designer</span>
+        </a>
+        <a class="px-4 py-3.5 text-secondary hover:text-primary font-title-sm text-title-sm transition-colors underline underline-offset-4" href="{% url 'catalog:item_list' %}">Shop Stems</a>
+      </div>
+    </div>
+
+    <div class="lg:col-span-6 relative mt-space-md lg:mt-0">
+      <div class="absolute -inset-4 bg-secondary-fixed/40 rounded-full blur-3xl -z-10 opacity-70"></div>
+      <div class="relative w-full rounded-2xl overflow-hidden shadow-xl bg-surface-container-lowest">
+        {% if hero_item and hero_item.image %}
+        <img class="w-full h-[520px] object-cover" src="{{ hero_item.image.url }}" alt="{{ hero_item.name }}">
+        {% else %}
+        <div class="w-full h-[520px] flex items-center justify-center bg-surface-container-low text-outline">
+          <span class="material-symbols-outlined text-9xl">local_florist</span>
+        </div>
+        {% endif %}
+        {% if hero_item %}
+        <div class="absolute bottom-6 left-6 right-6 sm:right-auto sm:max-w-xs bg-surface-container-lowest/95 backdrop-blur-md p-4 rounded-xl shadow-xl flex items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-primary flex-shrink-0">
+              <span class="material-symbols-outlined text-xl text-secondary">local_florist</span>
+            </div>
+            <div>
+              <p class="font-title-sm text-title-sm text-primary font-semibold leading-tight">{{ hero_item.name }}</p>
+              <p class="font-body-sm text-body-sm text-on-surface-variant">{{ hero_item.category.name }}</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="font-price-lg text-price-lg text-primary font-bold">${{ hero_item.price }}</span>
+            <a class="block font-label-sm text-label-sm text-secondary hover:text-primary font-semibold" href="{% url 'catalog:item_detail' slug=hero_item.slug %}">View</a>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="w-full bg-surface-container-low py-space-lg my-space-md">
+  <div class="max-w-[1320px] mx-auto px-margin-mobile lg:px-margin">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+      <div class="p-5 rounded-xl bg-surface-container-lowest shadow-sm flex items-start gap-3.5">
+        <div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-primary flex-shrink-0"><span class="material-symbols-outlined text-xl text-secondary">temp_preferences_custom</span></div>
+        <div><h3 class="font-title-sm text-title-sm text-primary font-semibold mb-1">Fresh Sourced Daily</h3><p class="font-body-sm text-body-sm text-on-surface-variant">Harvested before dawn from certified ethical growers.</p></div>
+      </div>
+      <div class="p-5 rounded-xl bg-surface-container-lowest shadow-sm flex items-start gap-3.5">
+        <div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-primary flex-shrink-0"><span class="material-symbols-outlined text-xl text-secondary">psychology_alt</span></div>
+        <div><h3 class="font-title-sm text-title-sm text-primary font-semibold mb-1">AI Stem Harmony</h3><p class="font-body-sm text-body-sm text-on-surface-variant">Coming soon: algorithmic color and style curation.</p></div>
+      </div>
+      <div class="p-5 rounded-xl bg-surface-container-lowest shadow-sm flex items-start gap-3.5">
+        <div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-primary flex-shrink-0"><span class="material-symbols-outlined text-xl text-secondary">handyman</span></div>
+        <div><h3 class="font-title-sm text-title-sm text-primary font-semibold mb-1">Master Florist Tied</h3><p class="font-body-sm text-body-sm text-on-surface-variant">Every bouquet hand-tied by our artisans.</p></div>
+      </div>
+      <div class="p-5 rounded-xl bg-surface-container-lowest shadow-sm flex items-start gap-3.5">
+        <div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-primary flex-shrink-0"><span class="material-symbols-outlined text-xl text-secondary">nest_eco_leaf</span></div>
+        <div><h3 class="font-title-sm text-title-sm text-primary font-semibold mb-1">100% Recyclable</h3><p class="font-body-sm text-body-sm text-on-surface-variant">Water-soluble hydration packs and seed-paper wrapping.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="w-full max-w-[1320px] mx-auto px-margin-mobile lg:px-margin py-space-xl">
+  <div class="flex flex-col md:flex-row md:items-end justify-between mb-space-lg">
+    <div>
+      <div class="inline-flex items-center gap-1.5 text-secondary font-label-sm text-label-sm uppercase tracking-widest font-semibold mb-1"><span class="material-symbols-outlined text-xs">filter_vintage</span> Curated Botanical Collections</div>
+      <h2 class="font-headline-lg text-headline-lg text-primary tracking-tight font-normal">Explore the Atelier</h2>
+    </div>
+  </div>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+    {% for cat in categories %}
+    <a class="group relative rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 bg-surface-container-lowest flex flex-col" href="{% url 'catalog:item_list' %}?category={{ cat.slug }}">
+      <div class="relative h-64 overflow-hidden bg-surface-container-low flex items-center justify-center">
+        <span class="material-symbols-outlined text-6xl text-outline">{{ cat.icon }}</span>
+        <div class="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-surface-container-lowest/90 backdrop-blur-sm font-label-sm text-label-sm text-primary font-semibold">{{ cat.item_count }} item{{ cat.item_count|pluralize }}</div>
+      </div>
+      <div class="p-5 flex flex-col justify-between flex-1 bg-surface-container-lowest">
+        <div>
+          <h3 class="font-headline-sm text-headline-sm text-primary group-hover:text-secondary transition-colors mb-1 font-normal">{{ cat.name }}</h3>
+          <p class="font-body-sm text-body-sm text-on-surface-variant">{{ cat.description|default:"Browse our selection." }}</p>
+        </div>
+        <div class="mt-4 flex items-center justify-between font-label-md text-label-md text-primary font-semibold pt-2">
+          <span>{{ cat.cta_label }}</span><span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="w-full bg-surface-container-low py-space-xl relative overflow-hidden">
+  <div class="max-w-[1320px] mx-auto px-margin-mobile lg:px-margin">
+    <div class="bg-surface-container-lowest rounded-3xl p-6 sm:p-10 lg:p-12 shadow-xl relative overflow-hidden">
+      <div class="relative z-10 max-w-3xl mb-space-lg">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm font-semibold mb-space-sm">
+          <span class="material-symbols-outlined text-xs">magic_button</span><span>Coming Soon</span>
+        </div>
+        <h2 class="font-headline-lg text-headline-lg text-primary tracking-tight font-normal mb-3">Design through feeling. Let AI translate emotion into blossoms.</h2>
+        <p class="font-body-lg text-body-lg text-on-surface-variant">Describe the memory, recipient, or feeling, and our AI will suggest a matching bouquet from our catalog. This feature is launching soon &mdash; for now, try our manual Bouquet Studio.</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-space-xl">
+        <div class="p-6 rounded-2xl bg-surface-container/60">
+          <div class="w-8 h-8 rounded-full bg-primary text-on-primary font-title-sm text-title-sm font-semibold flex items-center justify-center mb-3">1</div>
+          <h4 class="font-title-md text-title-md text-primary font-semibold mb-1">Tell us the moment</h4>
+          <p class="font-body-sm text-body-sm text-on-surface-variant">Occasion, style, and budget.</p>
+        </div>
+        <div class="p-6 rounded-2xl bg-surface-container/60">
+          <div class="w-8 h-8 rounded-full bg-primary text-on-primary font-title-sm text-title-sm font-semibold flex items-center justify-center mb-3">2</div>
+          <h4 class="font-title-md text-title-md text-primary font-semibold mb-1">AI Composes Harmony</h4>
+          <p class="font-body-sm text-body-sm text-on-surface-variant">A recommendation drawn from real catalog items.</p>
+        </div>
+        <div class="p-6 rounded-2xl bg-surface-container/60">
+          <div class="w-8 h-8 rounded-full bg-primary text-on-primary font-title-sm text-title-sm font-semibold flex items-center justify-center mb-3">3</div>
+          <h4 class="font-title-md text-title-md text-primary font-semibold mb-1">You Review &amp; Accept</h4>
+          <p class="font-body-sm text-body-sm text-on-surface-variant">Nothing is added to your bouquets without your approval.</p>
+        </div>
+      </div>
+      <div class="p-3 sm:p-4 rounded-2xl bg-surface-container-high/60 backdrop-blur-md shadow-inner">
+        <form class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3" onsubmit="event.preventDefault(); alert('The AI Floral Designer is coming soon! Try the Bouquet Studio in the meantime.');">
+          <div class="flex-1 flex items-center gap-3 px-4 py-3 rounded-full bg-surface-container-lowest shadow-sm">
+            <span class="material-symbols-outlined text-secondary text-xl flex-shrink-0">auto_awesome</span>
+            <input class="w-full bg-transparent text-primary font-body-md text-body-md placeholder:text-outline focus:outline-none" placeholder="Describe your recipient, feeling, or dream aesthetic..." type="text">
+          </div>
+          <button class="px-8 py-3.5 rounded-full bg-primary text-on-primary font-title-sm text-title-sm font-medium hover:bg-primary-container transition-all flex items-center justify-center gap-2 shadow-md flex-shrink-0" type="submit">
+            <span>Generate Bouquet</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if featured_items %}
+<section class="w-full max-w-[1320px] mx-auto px-margin-mobile lg:px-margin py-space-xl">
+  <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-space-lg">
+    <div>
+      <div class="inline-flex items-center gap-1.5 text-secondary font-label-sm text-label-sm uppercase tracking-widest font-semibold mb-1"><span class="material-symbols-outlined text-xs">local_florist</span> Atelier Signatures</div>
+      <h2 class="font-headline-lg text-headline-lg text-primary tracking-tight font-normal">Seasonal Arrangements</h2>
+    </div>
+    <a class="mt-3 sm:mt-0 font-title-sm text-title-sm text-primary hover:text-secondary font-semibold flex items-center gap-1 group" href="{% url 'catalog:item_list' %}">
+      <span>View Full Catalog</span><span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+    </a>
+  </div>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+    {% for item in featured_items %}
+    <div class="rounded-2xl bg-surface-container-lowest overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group">
+      <a href="{% url 'catalog:item_detail' slug=item.slug %}" class="relative h-72 bg-surface-container-low overflow-hidden block">
+        {% if item.image %}
+        <img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" src="{{ item.image.url }}" alt="{{ item.name }}">
+        {% else %}
+        <div class="w-full h-full flex items-center justify-center text-outline"><span class="material-symbols-outlined text-6xl">local_florist</span></div>
+        {% endif %}
+      </a>
+      <div class="p-5 flex flex-col flex-1 justify-between">
+        <div>
+          <span class="font-label-sm text-label-sm text-secondary block mb-1">{{ item.category.name }}</span>
+          <h3 class="font-headline-sm text-headline-sm text-primary font-normal mb-1">
+            <a href="{% url 'catalog:item_detail' slug=item.slug %}">{{ item.name }}</a>
+          </h3>
+          <p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">{{ item.description }}</p>
+        </div>
+        <div class="mt-5 pt-3 flex items-center justify-between">
+          <span class="font-price-lg text-price-lg text-primary font-bold">${{ item.price }}</span>
+          <div class="flex items-center gap-2">
+            <a class="px-3 py-1.5 rounded-full bg-surface-container text-primary hover:bg-surface-container-high font-label-sm text-label-sm font-semibold transition-colors" href="{% url 'bouquets:design_new' %}">Customize</a>
+            <button aria-label="Add to cart" onclick="alert('Cart is coming soon!')" class="w-9 h-9 rounded-full bg-primary text-on-primary hover:bg-primary-container flex items-center justify-center transition-colors shadow-sm">
+              <span class="material-symbols-outlined text-sm">add_shopping_cart</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
 {% endif %}
+
+<section class="w-full bg-surface-container py-space-xl">
+  <div class="max-w-[1320px] mx-auto px-margin-mobile lg:px-margin">
+    <div class="bg-surface-container-lowest p-8 lg:p-12 rounded-3xl shadow-sm max-w-3xl mx-auto text-center">
+      <h4 class="font-title-md text-title-md text-primary font-semibold mb-4">Our Philosophy</h4>
+      <p class="font-headline-sm text-headline-sm text-primary font-normal italic leading-relaxed mb-4">
+        &ldquo;In every flower lies an unspoken poetry. Artificial intelligence gives us the precision to understand your mood, but it is human touch and stem balance that breathes living soul into your gift.&rdquo;
+      </p>
+      <div class="flex items-center justify-center gap-2 text-secondary font-label-sm text-label-sm font-medium uppercase tracking-wider">
+        <span class="material-symbols-outlined text-sm">workspace_premium</span><span>The Bloom Atelier Team</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="w-full max-w-[1320px] mx-auto px-margin-mobile lg:px-margin py-space-xl">
+  <div class="bg-primary text-on-primary rounded-3xl p-8 sm:p-12 lg:p-16 relative overflow-hidden shadow-2xl">
+    <div class="relative z-10 max-w-2xl mx-auto text-center">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-container text-secondary-fixed mb-space-sm shadow-sm">
+        <span class="material-symbols-outlined text-xs">local_florist</span><span class="font-label-sm text-label-sm uppercase tracking-widest font-semibold">The Bloom Botanical Society</span>
+      </div>
+      <h2 class="font-display-hero text-headline-lg lg:text-display-hero text-on-primary font-normal tracking-tight mb-space-sm">A Weekly Bouquet for Your Senses</h2>
+      <p class="font-body-lg text-body-lg text-secondary-fixed-dim mb-space-lg max-w-lg mx-auto">Receive seasonal stem arrivals and invitations to floral styling masterclasses.</p>
+      <form class="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto mb-space-md" onsubmit="event.preventDefault(); alert('Bienvenue to the Bloom Botanical Society.');">
+        <input class="w-full sm:w-auto flex-1 px-5 py-3.5 rounded-full bg-surface-container-lowest text-on-surface font-body-md text-body-md placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-secondary-fixed" placeholder="Enter your email address..." required type="email">
+        <button class="w-full sm:w-auto px-8 py-3.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-title-sm text-title-sm font-semibold hover:bg-surface-bright transition-colors shadow-md flex items-center justify-center gap-2 flex-shrink-0" type="submit">
+          <span>Join Society</span><span class="material-symbols-outlined text-sm">arrow_forward</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

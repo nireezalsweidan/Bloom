@@ -1,12 +1,124 @@
-<a href="{% url 'catalog:item_list' %}">&larr; Back to shop</a>
+{% extends "base.html" %}
+{% block content %}
 
-<h1>{{ item.name }}</h1>
-{% if item.image %}
-  <img src="{{ item.image.url }}" alt="{{ item.name }}" width="400">
+<div class="max-w-[1320px] w-full mx-auto px-margin-mobile lg:px-margin pt-space-md pb-space-sm">
+  <nav aria-label="Breadcrumb" class="flex items-center gap-2 font-body-sm text-body-sm text-on-surface-variant">
+    <a class="hover:text-primary transition-colors flex items-center gap-1" href="{% url 'home' %}">
+      <span class="material-symbols-outlined text-sm">cottage</span><span>Home</span>
+    </a>
+    <span class="material-symbols-outlined text-xs text-outline">chevron_right</span>
+    <a class="hover:text-primary transition-colors" href="{% url 'catalog:item_list' %}">{{ item.category.name }}</a>
+    <span class="material-symbols-outlined text-xs text-outline">chevron_right</span>
+    <span class="text-primary font-medium">{{ item.name }}</span>
+  </nav>
+</div>
+
+<section class="max-w-[1320px] w-full mx-auto px-margin-mobile lg:px-margin py-space-md">
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter lg:gap-space-xl items-start">
+
+    <div class="lg:col-span-7 flex flex-col gap-space-md sticky top-28">
+      <div class="relative w-full aspect-[4/5] bg-surface-container-low rounded-xl overflow-hidden shadow-sm">
+        {% if item.image %}
+        <img alt="{{ item.name }}" class="w-full h-full object-cover object-center" src="{{ item.image.url }}">
+        {% else %}
+        <div class="w-full h-full flex items-center justify-center text-outline">
+          <span class="material-symbols-outlined text-8xl">local_florist</span>
+        </div>
+        {% endif %}
+        <div class="absolute top-4 left-4">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-surface-container-lowest/90 backdrop-blur-md rounded-full font-label-sm text-label-sm text-primary shadow-sm">
+            <span class="material-symbols-outlined text-sm text-secondary">local_florist</span>{{ item.category.name }}
+          </span>
+        </div>
+      </div>
+      {% if item.description %}
+      <div class="bg-surface-container-low p-space-md rounded-xl">
+        <p class="font-body-md text-body-md text-on-surface">{{ item.description }}</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="lg:col-span-5 flex flex-col gap-space-lg">
+      <div class="space-y-2">
+        <span class="font-label-sm text-label-sm text-secondary tracking-widest uppercase font-semibold">{{ item.category.name }}</span>
+        <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">{{ item.name }}</h1>
+        {% if item.tags.all %}
+        <div class="flex flex-wrap gap-2 pt-1">
+          {% for tag in item.tags.all %}
+          <span class="px-3 py-1 bg-surface-container-low text-primary rounded-full font-body-sm text-body-sm">{{ tag.name }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm space-y-2">
+        <div class="flex items-baseline justify-between">
+          <span class="font-price-lg text-price-lg text-primary font-semibold">${{ item.price }}</span>
+          {% if item.in_stock %}
+          <span class="font-label-sm text-label-sm bg-secondary-container text-on-secondary-container px-2.5 py-1 rounded-full font-semibold">In Stock</span>
+          {% else %}
+          <span class="font-label-sm text-label-sm bg-error-container text-on-error-container px-2.5 py-1 rounded-full font-semibold">Out of Stock</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 pt-2">
+        <div class="flex items-center bg-surface-container-lowest rounded-full shadow-sm p-1">
+          <button aria-label="Decrease quantity" type="button" onclick="changeQuantity(-1)" class="w-10 h-10 rounded-full hover:bg-surface-container text-primary flex items-center justify-center transition-colors">
+            <span class="material-symbols-outlined text-base">remove</span>
+          </button>
+          <span class="w-10 text-center font-title-sm text-title-sm text-primary font-semibold" id="qtyDisplay">1</span>
+          <button aria-label="Increase quantity" type="button" onclick="changeQuantity(1)" class="w-10 h-10 rounded-full hover:bg-surface-container text-primary flex items-center justify-center transition-colors">
+            <span class="material-symbols-outlined text-base">add</span>
+          </button>
+        </div>
+        <button {% if not item.in_stock %}disabled{% endif %} type="button" onclick="alert('Cart is coming soon!')" class="flex-1 py-4 px-6 bg-primary text-on-primary rounded-full hover:bg-primary-container transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+          <span class="material-symbols-outlined text-lg">local_mall</span>
+          <span class="font-title-sm text-title-sm font-semibold tracking-wide">{% if item.in_stock %}Add to Cart{% else %}Out of Stock{% endif %}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if related_items %}
+<section class="w-full bg-surface-container-low py-space-xl mt-space-lg">
+  <div class="max-w-[1320px] mx-auto px-margin-mobile lg:px-margin space-y-space-lg">
+    <div>
+      <span class="font-label-sm text-label-sm text-secondary uppercase tracking-widest font-semibold">You Might Also Like</span>
+      <h2 class="font-headline-md text-headline-md text-primary tracking-tight mt-1">More from {{ item.category.name }}</h2>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+      {% for related in related_items %}
+      <a href="{% url 'catalog:item_detail' slug=related.slug %}" class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col group">
+        <div class="aspect-[4/3] w-full bg-surface-container relative overflow-hidden">
+          {% if related.image %}
+          <img alt="{{ related.name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="{{ related.image.url }}">
+          {% else %}
+          <div class="w-full h-full flex items-center justify-center text-outline">
+            <span class="material-symbols-outlined text-4xl">local_florist</span>
+          </div>
+          {% endif %}
+        </div>
+        <div class="p-5 flex items-baseline justify-between">
+          <h3 class="font-title-md text-title-md text-primary font-semibold">{{ related.name }}</h3>
+          <span class="font-title-sm text-title-sm text-primary font-bold">${{ related.price }}</span>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
 {% endif %}
 
-<p><strong>Price:</strong> ${{ item.price }}</p>
-<p><strong>Category:</strong> {{ item.category.name }}</p>
-<p><strong>Tags:</strong> {% for tag in item.tags.all %}{{ tag.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
-<p><strong>Availability:</strong> {% if item.in_stock %}{{ item.stock_quantity }} in stock{% else %}Out of stock{% endif %}</p>
-<p>{{ item.description }}</p>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  let currentQty = 1;
+  function changeQuantity(delta) {
+    currentQty = Math.max(1, currentQty + delta);
+    document.getElementById('qtyDisplay').textContent = currentQty;
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="w-full px-margin-mobile lg:px-margin max-w-[1320px] mx-auto pt-6 pb-space-lg">
+  <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-on-surface-variant font-body-sm text-body-sm">
+    <a class="hover:text-primary transition-colors" href="{% url 'home' %}">Atelier Home</a>
+    <span class="material-symbols-outlined text-xs text-outline">chevron_right</span>
+    <span class="text-primary font-semibold">My Saved Bouquets</span>
+  </nav>
+  <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mt-2">
+    <div class="max-w-2xl">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm mb-3">
+        <span class="material-symbols-outlined text-xs">local_florist</span><span>Personal Botanical Archive</span>
+      </div>
+      <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">My Saved Bouquets</h1>
+      <p class="font-body-lg text-body-lg text-on-surface-variant mt-2">Curate, refine, and revisit your personal bespoke floral formulas.</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-3">
+      <a class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-on-primary font-title-sm text-title-sm shadow-md hover:bg-primary-container hover:-translate-y-0.5 transition-all" href="{% url 'bouquets:design_new' %}">
+        <span class="material-symbols-outlined text-lg">add_circle</span><span>Design a New Bouquet</span>
+      </a>
+      <a class="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-surface-container-high text-primary hover:bg-surface-container-highest font-title-sm text-title-sm transition-all shadow-sm" href="#">
+        <span class="material-symbols-outlined text-base text-tertiary">auto_awesome</span><span>AI Bouquet Generator (Coming Soon)</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="w-full px-margin-mobile lg:px-margin max-w-[1320px] mx-auto pb-space-lg">
+  <div class="bg-surface-container-lowest rounded-xl p-4 lg:p-5 shadow-sm flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+    <div class="flex items-center gap-1.5 overflow-x-auto pb-2 lg:pb-0" id="filter-container">
+      <button class="filter-pill active px-4 py-2 rounded-full bg-primary text-on-primary font-label-md text-label-md transition-colors whitespace-nowrap flex items-center gap-2" data-category="all">
+        <span>All Bouquets</span><span class="px-1.5 py-0.5 rounded-full bg-surface-container-low text-primary text-xs font-bold">{{ counts.all }}</span>
+      </button>
+      <button class="filter-pill px-4 py-2 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface-variant font-label-md text-label-md transition-colors whitespace-nowrap flex items-center gap-2" data-category="saved">
+        <span>Saved</span><span class="px-1.5 py-0.5 rounded-full bg-surface-container-lowest text-on-surface-variant text-xs">{{ counts.saved }}</span>
+      </button>
+      <button class="filter-pill px-4 py-2 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface-variant font-label-md text-label-md transition-colors whitespace-nowrap flex items-center gap-2" data-category="drafts">
+        <span>Drafts</span><span class="px-1.5 py-0.5 rounded-full bg-surface-container-lowest text-on-surface-variant text-xs">{{ counts.drafts }}</span>
+      </button>
+      <button class="filter-pill px-4 py-2 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface-variant font-label-md text-label-md transition-colors whitespace-nowrap flex items-center gap-2" data-category="ordered">
+        <span>Ordered</span><span class="px-1.5 py-0.5 rounded-full bg-surface-container-lowest text-on-surface-variant text-xs">{{ counts.ordered }}</span>
+      </button>
+      <button class="filter-pill px-4 py-2 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface-variant font-label-md text-label-md transition-colors whitespace-nowrap flex items-center gap-2" data-category="ai">
+        <span class="material-symbols-outlined text-xs text-tertiary">auto_awesome</span><span>AI Formulations</span><span class="px-1.5 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed text-xs font-semibold">{{ counts.ai }}</span>
+      </button>
+    </div>
+    <div class="flex flex-col sm:flex-row items-center gap-3">
+      <div class="relative w-full sm:w-72">
+        <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-outline text-lg">search</span>
+        <input class="w-full pl-10 pr-4 py-2 rounded-full bg-surface-container-low text-on-surface font-body-sm text-body-sm placeholder:text-outline focus:outline-none focus:bg-surface-container-lowest transition-colors shadow-inner" id="bouquet-search" placeholder="Search occasion, flower, or notes..." type="text">
+      </div>
+      <form method="get" class="flex items-center gap-2 w-full sm:w-auto">
+        <label class="font-label-sm text-label-sm text-on-surface-variant whitespace-nowrap hidden sm:inline" for="sort-select">Sort by:</label>
+        <select name="sort" id="sort-select" onchange="this.form.submit()" class="w-full sm:w-auto px-4 py-2 rounded-full bg-surface-container-low text-primary font-body-sm text-body-sm focus:outline-none cursor-pointer">
+          <option value="recent" {% if sort == "recent" %}selected{% endif %}>Recently Updated</option>
+          <option value="price_asc" {% if sort == "price_asc" %}selected{% endif %}>Price: Low to High</option>
+          <option value="price_desc" {% if sort == "price_desc" %}selected{% endif %}>Price: High to Low</option>
+          <option value="stems" {% if sort == "stems" %}selected{% endif %}>Fullness: Stem Count</option>
+        </select>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section class="w-full px-margin-mobile lg:px-margin max-w-[1320px] mx-auto pb-space-xl">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+
+    {% for bouquet in bouquets %}
+    <article class="bouquet-card bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group"
+      data-type="{{ bouquet.status }} {% if bouquet.source == 'ai' %}ai{% endif %}">
+      <div class="relative w-full h-56 overflow-hidden bg-surface-container flex items-center justify-center">
+        <span class="material-symbols-outlined text-6xl text-outline">local_florist</span>
+        <div class="absolute top-4 left-4 flex flex-wrap items-center gap-2">
+          {% if bouquet.status == "saved" %}
+          <span class="px-3 py-1 rounded-full bg-surface-container-lowest/90 backdrop-blur-md text-primary font-label-sm text-label-sm font-semibold shadow-sm">SAVED</span>
+          {% elif bouquet.status == "draft" %}
+          <span class="px-3 py-1 rounded-full bg-surface-container-highest text-on-surface font-label-sm text-label-sm font-semibold shadow-sm flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-tertiary"></span>DRAFT
+          </span>
+          {% else %}
+          <span class="px-3 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-semibold shadow-sm flex items-center gap-1">
+            <span class="material-symbols-outlined text-xs">check_circle</span>ORDERED
+          </span>
+          {% endif %}
+          {% if bouquet.source == "ai" %}
+          <span class="px-2.5 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm flex items-center gap-1 shadow-sm">
+            <span class="material-symbols-outlined text-xs">auto_awesome</span>AI Formulated
+          </span>
+          {% endif %}
+        </div>
+        <div class="absolute top-4 right-4">
+          <div class="relative">
+            <button aria-label="More options" class="more-menu-btn w-9 h-9 rounded-full bg-surface-container-lowest/90 backdrop-blur-md flex items-center justify-center text-primary hover:bg-surface-container-lowest transition-colors shadow-sm">
+              <span class="material-symbols-outlined text-lg">more_vert</span>
+            </button>
+            <div class="menu-dropdown hidden absolute right-0 mt-2 w-48 bg-surface-container-lowest rounded-xl shadow-xl p-2 z-20 flex flex-col gap-1 text-left">
+              <form method="post" action="{% url 'bouquets:bouquet_clone' pk=bouquet.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-on-surface hover:bg-surface-container-low font-body-sm text-body-sm w-full text-left">
+                  <span class="material-symbols-outlined text-base">content_copy</span> Clone Recipe
+                </button>
+              </form>
+              {% if bouquet.status == "draft" %}
+              <a href="{% url 'bouquets:design_edit' pk=bouquet.pk %}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-on-surface hover:bg-surface-container-low font-body-sm text-body-sm w-full text-left">
+                <span class="material-symbols-outlined text-base">edit</span> Edit Recipe
+              </a>
+              {% endif %}
+              <form method="post" action="{% url 'bouquets:bouquet_delete' pk=bouquet.pk %}" onsubmit="return confirm('Delete this bouquet permanently?');">
+                {% csrf_token %}
+                <button type="submit" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-error hover:bg-error-container font-body-sm text-body-sm w-full text-left">
+                  <span class="material-symbols-outlined text-base">delete</span> Remove Recipe
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+        <div class="absolute bottom-3 left-4 right-4 flex items-center justify-between px-3 py-1.5 rounded-full bg-primary/75 backdrop-blur-md text-on-primary font-label-sm text-label-sm">
+          <span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs text-secondary-fixed">spa</span>{{ bouquet.total_stems }} Stem{{ bouquet.total_stems|pluralize }}</span>
+          <span class="font-semibold text-secondary-fixed">{{ bouquet.get_style_display }}</span>
+        </div>
+      </div>
+
+      <div class="p-6 flex-1 flex flex-col justify-between">
+        <div>
+          <div class="flex items-baseline justify-between gap-2 mb-2">
+            <h2 class="font-headline-sm text-headline-sm text-primary group-hover:text-secondary transition-colors">{{ bouquet.get_occasion_display }}</h2>
+            <span class="font-price-lg text-price-lg text-primary">${{ bouquet.price }}</span>
+          </div>
+          <p class="font-label-md text-label-md text-secondary uppercase tracking-wider mb-3">
+            {% if bouquet.status == "draft" %}Updated {{ bouquet.updated_at|timesince }} ago{% else %}Created {{ bouquet.created_at|date:"M j, Y" }}{% endif %}
+          </p>
+
+          {% if bouquet.items.all %}
+          <div class="bg-surface-container-low rounded-xl p-3 mb-4">
+            <span class="font-label-sm text-label-sm text-on-surface-variant font-semibold block mb-1.5 uppercase">Botanical Ratio</span>
+            <p class="font-body-sm text-body-sm text-primary leading-relaxed">
+              {% for bi in bouquet.items.all %}{{ bi.quantity }}&times; {{ bi.item.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+            </p>
+          </div>
+          {% endif %}
+
+          {% if bouquet.card_message %}
+          <div class="p-3 rounded-lg bg-surface-container/60 mb-5 flex items-start gap-2.5">
+            <span class="material-symbols-outlined text-sm text-secondary mt-0.5">edit_note</span>
+            <p class="font-body-sm text-body-sm italic text-on-surface-variant leading-snug">&ldquo;{{ bouquet.card_message }}&rdquo;</p>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="flex items-center gap-2 pt-2">
+          {% if bouquet.status == "draft" %}
+          <a href="{% url 'bouquets:design_edit' pk=bouquet.pk %}" class="flex-1 py-3 px-4 rounded-full bg-secondary text-on-secondary hover:bg-secondary/90 font-title-sm text-title-sm flex items-center justify-center gap-2 shadow-sm transition-all">
+            <span class="material-symbols-outlined text-base">edit</span><span>Resume Editing</span>
+          </a>
+          {% else %}
+          <button type="button" onclick="alert('Cart is coming soon!')" class="flex-1 py-3 px-4 rounded-full bg-primary text-on-primary hover:bg-primary-container font-title-sm text-title-sm flex items-center justify-center gap-2 shadow-sm transition-all">
+            <span class="material-symbols-outlined text-base">shopping_bag</span><span>Add to Cart (${{ bouquet.price }})</span>
+          </button>
+          {% endif %}
+        </div>
+      </div>
+    </article>
+    {% endfor %}
+
+    <article class="bouquet-card rounded-xl p-8 flex flex-col items-center justify-center text-center group transition-all duration-300 min-h-[420px] bg-surface-container-low/40 hover:bg-surface-container-low shadow-sm" data-type="all">
+      <div class="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center text-primary mb-4 group-hover:scale-110 transition-transform duration-300 shadow-sm">
+        <span class="material-symbols-outlined text-3xl">draw</span>
+      </div>
+      <span class="font-label-sm text-label-sm text-secondary uppercase tracking-widest font-semibold mb-2">Blank Botanical Canvas</span>
+      <h2 class="font-headline-sm text-headline-sm text-primary mb-3">Design from Scratch</h2>
+      <p class="font-body-md text-body-md text-on-surface-variant max-w-xs mb-6">Hand-pick your flowers, greeting card, and personal note in our interactive studio.</p>
+      <a class="w-full max-w-xs py-3 px-5 rounded-full bg-primary text-on-primary hover:bg-primary-container font-title-sm text-title-sm flex items-center justify-center gap-2 shadow-md transition-all" href="{% url 'bouquets:design_new' %}">
+        <span class="material-symbols-outlined text-lg">add</span><span>Design a New Bouquet</span>
+      </a>
+    </article>
+
+    {% if not bouquets %}
+    <p class="col-span-full text-center text-on-surface-variant py-space-lg">You haven't designed any bouquets yet — start with the blank canvas above.</p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="w-full px-margin-mobile lg:px-margin max-w-[1320px] mx-auto pb-space-xl">
+  <div class="bg-surface-container-lowest rounded-xl p-8 lg:p-10 shadow-sm">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+      <div class="lg:col-span-4">
+        <div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-primary mb-3">
+          <span class="material-symbols-outlined text-xl">verified</span>
+        </div>
+        <h3 class="font-headline-sm text-headline-sm text-primary mb-2">Your Recipes, Preserved</h3>
+        <p class="font-body-md text-body-md text-on-surface-variant">Every saved bouquet keeps its exact stem ratios, card, and message so you can re-order or tweak it anytime.</p>
+      </div>
+      <div class="lg:col-span-4 bg-surface-container-low rounded-xl p-5">
+        <div class="flex items-center gap-3 mb-2">
+          <span class="material-symbols-outlined text-secondary">nest_eco_leaf</span>
+          <h4 class="font-title-sm text-title-sm text-primary font-semibold">Seasonal Substitutions</h4>
+        </div>
+        <p class="font-body-sm text-body-sm text-on-surface-variant">If a flower in your recipe becomes unavailable, our florists can suggest a close match.</p>
+      </div>
+      <div class="lg:col-span-4 bg-surface-container-low rounded-xl p-5">
+        <div class="flex items-center gap-3 mb-2">
+          <span class="material-symbols-outlined text-secondary">water_drop</span>
+          <h4 class="font-title-sm text-title-sm text-primary font-semibold">Freshness Guarantee</h4>
+        </div>
+        <p class="font-body-sm text-body-sm text-on-surface-variant">Every bouquet ships with a hydration pack for lasting freshness.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  (function() {
+    const filterPills = document.querySelectorAll('.filter-pill');
+    const cards = document.querySelectorAll('.bouquet-card');
+    const searchInput = document.getElementById('bouquet-search');
+
+    function filterAndSearch() {
+      const activeFilter = document.querySelector('.filter-pill.active')?.getAttribute('data-category') || 'all';
+      const query = searchInput.value.toLowerCase().trim();
+
+      cards.forEach(card => {
+        const type = card.getAttribute('data-type') || '';
+        const cardText = card.innerText.toLowerCase();
+        const matchesCategory = activeFilter === 'all' || type.includes(activeFilter);
+        const matchesQuery = query === '' || cardText.includes(query);
+        card.classList.toggle('hidden', !(matchesCategory && matchesQuery));
+      });
+    }
+
+    filterPills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        filterPills.forEach(p => {
+          p.classList.remove('active', 'bg-primary', 'text-on-primary');
+          p.classList.add('bg-surface-container', 'text-on-surface-variant');
+        });
+        pill.classList.add('active', 'bg-primary', 'text-on-primary');
+        pill.classList.remove('bg-surface-container', 'text-on-surface-variant');
+        filterAndSearch();
+      });
+    });
+
+    searchInput?.addEventListener('input', filterAndSearch);
+
+    document.querySelectorAll('.more-menu-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const dropdown = btn.nextElementSibling;
+        document.querySelectorAll('.menu-dropdown').forEach(d => { if (d !== dropdown) d.classList.add('hidden'); });
+        dropdown?.classList.toggle('hidden');
+      });
+    });
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.menu-dropdown').forEach(d => d.classList.add('hidden'));
+    });
+  })();
+</script>
+{% endblock %}

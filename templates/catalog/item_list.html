@@ -1,53 +1,196 @@
-<h1>Shop</h1>
+{% extends "base.html" %}
+{% block content %}
 
-<form method="get">
-  <input type="text" name="q" value="{{ query }}" placeholder="Search products...">
-
-  <select name="category">
-    <option value="">All categories</option>
-    {% for cat in categories %}
-      <option value="{{ cat.slug }}" {% if cat.slug == selected_category %}selected{% endif %}>
-        {{ cat.name }}
-      </option>
-    {% endfor %}
-  </select>
-
-  <div>
-    {% for tag in tags %}
-      <label>
-        <input type="checkbox" name="tag" value="{{ tag.slug }}"
-          {% if tag.slug in selected_tags %}checked{% endif %}>
-        {{ tag.name }}
-      </label>
-    {% endfor %}
-  </div>
-
-  <button type="submit">Filter</button>
-</form>
-
-<div class="item-grid">
-  {% for item in items %}
-    <div class="item-card">
-      {% if item.image %}
-        <img src="{{ item.image.url }}" alt="{{ item.name }}" width="200">
-      {% endif %}
-      <h3><a href="{% url 'catalog:item_detail' slug=item.slug %}">{{ item.name }}</a></h3>
-      <p>${{ item.price }}</p>
-      <p>{% if item.in_stock %}In stock{% else %}Out of stock{% endif %}</p>
+<div class="w-full bg-gradient-to-b from-surface-container-low via-surface to-surface-container-low/40 py-space-md">
+  <div class="max-w-[1320px] mx-auto px-margin-mobile lg:px-margin">
+    <nav aria-label="Breadcrumb" class="flex items-center gap-2 mb-space-sm">
+      <a class="font-body-sm text-body-sm text-secondary hover:text-primary transition-colors flex items-center gap-1" href="{% url 'home' %}">
+        <span class="material-symbols-outlined text-sm">cottage</span><span>Atelier Home</span>
+      </a>
+      <span class="text-outline-variant font-body-sm text-body-sm">/</span>
+      <span class="font-body-sm text-body-sm text-on-surface font-medium">Botanical Collection</span>
+    </nav>
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-space-md pb-space-lg">
+      <div>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary-container/60 text-on-secondary-container mb-space-xs shadow-sm">
+          <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+          <span class="font-label-sm text-label-sm tracking-wider uppercase">Dawn Harvest Catalogue</span>
+        </div>
+        <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">Botanical Collection &amp; Atelier Stems</h1>
+        <p class="font-body-md text-body-md text-on-surface-variant max-w-2xl mt-1">
+          Carefully gathered from organic French and Tuscan soil.
+        </p>
+      </div>
+      <div class="px-4 py-2.5 rounded-full bg-surface-container-high text-primary font-label-md text-label-md flex items-center justify-center gap-2 whitespace-nowrap shadow-sm">
+        <span class="material-symbols-outlined text-sm text-secondary">eco</span>
+        <span>{{ paginator.count }} item{{ paginator.count|pluralize }} available</span>
+      </div>
     </div>
-  {% empty %}
-    <p>No items match your filters.</p>
-  {% endfor %}
+  </div>
 </div>
 
-{% if is_paginated %}
-  <div class="pagination">
-    {% if page_obj.has_previous %}
-      <a href="?page={{ page_obj.previous_page_number }}&q={{ query }}&category={{ selected_category }}">Previous</a>
-    {% endif %}
-    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-    {% if page_obj.has_next %}
-      <a href="?page={{ page_obj.next_page_number }}&q={{ query }}&category={{ selected_category }}">Next</a>
-    {% endif %}
+<div class="max-w-[1320px] mx-auto px-margin-mobile lg:px-margin py-space-lg w-full">
+<form method="get" id="filter-form">
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
+
+    <aside class="lg:col-span-3 space-y-space-md">
+      <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm space-y-6">
+        <div class="flex items-center justify-between pb-3">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-xl">tune</span>
+            <h2 class="font-title-md text-title-md text-primary font-semibold">Refine Harvest</h2>
+          </div>
+          <a href="{% url 'catalog:item_list' %}" class="font-label-sm text-label-sm text-secondary hover:text-primary transition-colors underline underline-offset-4">Reset All</a>
+        </div>
+
+        <div class="space-y-3">
+          <span class="font-label-sm text-label-sm text-outline tracking-wider uppercase font-semibold block">Categories</span>
+          <div class="space-y-2">
+            {% for cat in categories %}
+            <label class="flex items-center justify-between group cursor-pointer">
+              <div class="flex items-center gap-2.5">
+                <input type="checkbox" name="category" value="{{ cat.slug }}" class="w-4 h-4 rounded text-primary accent-primary cursor-pointer" {% if cat.slug in selected_categories %}checked{% endif %}>
+                <span class="font-body-sm text-body-sm text-on-surface group-hover:text-primary transition-colors">{{ cat.name }}</span>
+              </div>
+              <span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant">{{ cat.item_count }}</span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="space-y-3 pt-2">
+          <span class="font-label-sm text-label-sm text-outline tracking-wider uppercase font-semibold block">Occasion &amp; Mood</span>
+          <div class="flex flex-wrap gap-1.5">
+            {% for tag in tags %}
+            <label class="cursor-pointer">
+              <input type="checkbox" name="tag" value="{{ tag.slug }}" class="hidden peer" {% if tag.slug in selected_tags %}checked{% endif %}>
+              <span class="px-3 py-1.5 rounded-full font-label-sm text-label-sm transition-colors inline-block peer-checked:bg-primary peer-checked:text-on-primary bg-surface-container text-on-surface hover:bg-surface-container-high">{{ tag.name }}</span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="space-y-3 pt-2">
+          <span class="font-label-sm text-label-sm text-outline tracking-wider uppercase font-semibold block">Price Bracket</span>
+          <div class="flex items-center gap-2">
+            <input type="number" name="min_price" value="{{ min_price }}" placeholder="Min" min="0" step="0.01" class="w-full px-3 py-2 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none focus:ring-2 focus:ring-secondary/40">
+            <span class="text-outline">&mdash;</span>
+            <input type="number" name="max_price" value="{{ max_price }}" placeholder="Max" min="0" step="0.01" class="w-full px-3 py-2 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none focus:ring-2 focus:ring-secondary/40">
+          </div>
+        </div>
+
+        <div class="space-y-3 pt-2">
+          <span class="font-label-sm text-label-sm text-outline tracking-wider uppercase font-semibold block">Stem Readiness</span>
+          <div class="flex items-center justify-between p-2.5 rounded-xl bg-surface-container-low/60">
+            <span class="font-body-sm text-body-sm text-primary font-medium">In Stock Only</span>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" name="in_stock" value="1" class="sr-only peer" {% if in_stock_only %}checked{% endif %}>
+              <div class="w-9 h-5 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+            </label>
+          </div>
+        </div>
+
+        <button type="submit" class="w-full py-2.5 rounded-full bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors">Apply Filters</button>
+      </div>
+    </aside>
+
+    <main class="lg:col-span-9 space-y-space-md">
+      <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="relative flex-1 max-w-md">
+          <span class="material-symbols-outlined text-secondary absolute left-3.5 top-1/2 -translate-y-1/2 text-lg">search</span>
+          <input type="text" name="q" value="{{ query }}" placeholder="Search variety, scent, or note..." class="w-full pl-10 pr-4 py-2.5 rounded-full bg-surface-container-low text-on-surface font-body-sm text-body-sm placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-secondary/40 transition-all">
+        </div>
+        <div class="flex items-center gap-3 self-end md:self-auto">
+          <label class="font-label-sm text-label-sm text-outline uppercase font-semibold whitespace-nowrap" for="sort-select">Sort by</label>
+          <select name="sort" id="sort-select" onchange="this.form.submit()" class="appearance-none pl-3.5 pr-8 py-1.5 rounded-full bg-surface-container-low text-primary font-title-sm text-title-sm font-medium focus:outline-none focus:ring-2 focus:ring-secondary/40 cursor-pointer shadow-sm">
+            <option value="" {% if not sort %}selected{% endif %}>Featured</option>
+            <option value="price_asc" {% if sort == "price_asc" %}selected{% endif %}>Price: Low to High</option>
+            <option value="price_desc" {% if sort == "price_desc" %}selected{% endif %}>Price: High to Low</option>
+            <option value="newest" {% if sort == "newest" %}selected{% endif %}>Newest Arrivals</option>
+          </select>
+        </div>
+      </div>
+
+      {% if selected_categories or selected_tags or query %}
+      <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm flex flex-wrap items-center gap-2">
+        <span class="font-label-sm text-label-sm text-outline uppercase font-semibold">Filtered by:</span>
+        {% if query %}<span class="px-3 py-1 rounded-full bg-surface-container-low text-primary font-body-sm text-body-sm">"{{ query }}"</span>{% endif %}
+        {% for cat in categories %}{% if cat.slug in selected_categories %}<span class="px-3 py-1 rounded-full bg-surface-container-low text-primary font-body-sm text-body-sm">{{ cat.name }}</span>{% endif %}{% endfor %}
+        {% for tag in tags %}{% if tag.slug in selected_tags %}<span class="px-3 py-1 rounded-full bg-surface-container-low text-primary font-body-sm text-body-sm">{{ tag.name }}</span>{% endif %}{% endfor %}
+        <a href="{% url 'catalog:item_list' %}" class="font-label-sm text-label-sm text-tertiary-container hover:text-tertiary transition-colors ml-1 font-semibold">Clear All</a>
+      </div>
+      {% endif %}
+
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {% for item in items %}
+        <div class="group flex flex-col bg-surface-container-lowest rounded-2xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
+          <a href="{% url 'catalog:item_detail' slug=item.slug %}" class="relative w-full aspect-[4/5] rounded-xl overflow-hidden bg-[#F4EFEA] mb-4 block">
+            {% if item.image %}
+            <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="{{ item.image.url }}" alt="{{ item.name }}">
+            {% else %}
+            <div class="w-full h-full flex items-center justify-center text-outline">
+              <span class="material-symbols-outlined text-5xl">local_florist</span>
+            </div>
+            {% endif %}
+            <div class="absolute top-3 left-3">
+              {% if not item.in_stock %}
+              <span class="px-2.5 py-1 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-semibold tracking-wider uppercase shadow-sm">Out of Stock</span>
+              {% elif item.stock_quantity <= 5 %}
+              <span class="px-2.5 py-1 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-semibold tracking-wider uppercase shadow-sm">Limited Stock</span>
+              {% else %}
+              <span class="px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold tracking-wider uppercase shadow-sm">In Stock</span>
+              {% endif %}
+            </div>
+          </a>
+          <div class="flex flex-col flex-1 justify-between">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="font-label-sm text-label-sm text-secondary uppercase font-semibold">{{ item.category.name }}</span>
+                {% if item.tags.all %}
+                <span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+                <span class="font-label-sm text-label-sm text-tertiary-container font-medium">{% for tag in item.tags.all %}{{ tag.name }}{% if not forloop.last %} &bull; {% endif %}{% endfor %}</span>
+                {% endif %}
+              </div>
+              <h3 class="font-headline-sm text-headline-sm text-primary group-hover:text-secondary transition-colors font-medium">
+                <a href="{% url 'catalog:item_detail' slug=item.slug %}">{{ item.name }}</a>
+              </h3>
+              <p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2 mt-1">{{ item.description }}</p>
+            </div>
+            <div class="flex items-center justify-between pt-4 mt-4 bg-surface-container-low/30 -mx-4 -mb-4 px-4 py-3 rounded-b-2xl">
+              <div class="flex flex-col">
+                <span class="font-label-sm text-label-sm text-outline">Atelier Price</span>
+                <span class="font-price-lg text-price-lg text-primary font-bold">${{ item.price }}</span>
+              </div>
+              <a href="{% url 'catalog:item_detail' slug=item.slug %}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-transform active:scale-95 shadow-sm">
+                <span class="material-symbols-outlined text-sm">visibility</span><span>View</span>
+              </a>
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <p class="col-span-full text-center text-on-surface-variant py-space-xl">No items match your filters.</p>
+        {% endfor %}
+      </div>
+
+      {% if is_paginated %}
+      <div class="pt-space-lg flex flex-col sm:flex-row items-center justify-between gap-4">
+        <span class="font-body-sm text-body-sm text-on-surface-variant">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }} ({{ paginator.count }} items)</span>
+        <nav class="flex items-center gap-1.5">
+          {% if page_obj.has_previous %}
+          <a href="?{% if base_qs %}{{ base_qs }}&{% endif %}page={{ page_obj.previous_page_number }}" class="flex items-center gap-1 px-3 py-2 rounded-full bg-surface-container text-primary hover:bg-surface-container-high transition-colors font-label-md text-label-md">
+            <span class="material-symbols-outlined text-sm">chevron_left</span><span>Previous</span>
+          </a>
+          {% endif %}
+          {% if page_obj.has_next %}
+          <a href="?{% if base_qs %}{{ base_qs }}&{% endif %}page={{ page_obj.next_page_number }}" class="flex items-center gap-1 px-3 py-2 rounded-full bg-surface-container text-primary hover:bg-surface-container-high transition-colors font-label-md text-label-md">
+            <span>Next</span><span class="material-symbols-outlined text-sm">chevron_right</span>
+          </a>
+          {% endif %}
+        </nav>
+      </div>
+      {% endif %}
+    </main>
   </div>
-{% endif %}
+</form>
+</div>
+{% endblock %}

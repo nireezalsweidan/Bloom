@@ -1,0 +1,359 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="max-w-[1320px] w-full mx-auto px-margin-mobile lg:px-margin py-space-lg">
+
+  <section class="w-full bg-surface-container-low/70 backdrop-blur-md px-margin-mobile lg:px-margin py-space-md shadow-sm rounded-2xl mb-space-lg">
+    <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-sm">
+          <span class="material-symbols-outlined text-lg">local_florist</span>
+        </div>
+        <div>
+          <span class="font-label-sm text-label-sm uppercase tracking-widest text-secondary block">Atelier Studio</span>
+          <h1 class="font-headline-sm text-headline-sm text-primary leading-tight">{% if bouquet %}Edit Your Bouquet{% else %}Artisan Bouquet Studio{% endif %}</h1>
+        </div>
+      </div>
+      <nav aria-label="Bouquet Creation Steps" class="flex items-center gap-2 sm:gap-3 overflow-x-auto py-1 max-w-full" id="stepper-nav">
+        <button type="button" class="stepper-btn flex items-center gap-2 flex-shrink-0 px-3 py-1.5 rounded-full transition-all bg-surface-container-lowest shadow-sm text-primary font-semibold" data-step="1" onclick="goToStep(1)">
+          <span class="stepper-num w-7 h-7 rounded-full flex items-center justify-center font-label-md text-label-md bg-primary text-on-primary">1</span>
+          <span class="font-title-sm text-title-sm">Occasion</span>
+        </button>
+        <span class="text-outline-variant font-light">&mdash;</span>
+        <button type="button" class="stepper-btn flex items-center gap-2 flex-shrink-0 px-3 py-1.5 rounded-full transition-all opacity-70" data-step="2" onclick="goToStep(2)">
+          <span class="stepper-num w-7 h-7 rounded-full flex items-center justify-center font-label-md text-label-md bg-surface-container-high text-on-surface-variant">2</span>
+          <span class="font-title-sm text-title-sm">Flowers</span>
+        </button>
+        <span class="text-outline-variant font-light">&mdash;</span>
+        <button type="button" class="stepper-btn flex items-center gap-2 flex-shrink-0 px-3 py-1.5 rounded-full transition-all opacity-70" data-step="3" onclick="goToStep(3)">
+          <span class="stepper-num w-7 h-7 rounded-full flex items-center justify-center font-label-md text-label-md bg-surface-container-high text-on-surface-variant">3</span>
+          <span class="font-title-sm text-title-sm">Card &amp; Note</span>
+        </button>
+        <span class="text-outline-variant font-light">&mdash;</span>
+        <button type="button" class="stepper-btn flex items-center gap-2 flex-shrink-0 px-3 py-1.5 rounded-full transition-all opacity-70" data-step="4" onclick="goToStep(4)">
+          <span class="stepper-num w-7 h-7 rounded-full flex items-center justify-center font-label-md text-label-md bg-surface-container-high text-on-surface-variant">4</span>
+          <span class="font-title-sm text-title-sm">Review</span>
+        </button>
+      </nav>
+    </div>
+  </section>
+
+  <form method="post" id="bouquet-form">
+    {% csrf_token %}
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-start">
+
+      <div class="lg:col-span-7 flex flex-col gap-space-lg">
+
+        <div class="wizard-step bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-md" data-step="1">
+          <div>
+            <span class="font-label-sm text-label-sm uppercase tracking-widest text-secondary">Step 1</span>
+            <h2 class="font-headline-sm text-headline-sm text-primary">Occasion &amp; Mood</h2>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
+            <label class="flex flex-col gap-1">
+              <span class="font-body-sm text-body-sm text-on-surface-variant font-medium">Occasion</span>
+              <select name="occasion" id="id_occasion" onchange="updateLivePreview()" class="px-3 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none focus:ring-2 focus:ring-secondary/40" required>
+                <option value="">-- Select --</option>
+                {% for value, label in occasion_choices %}
+                <option value="{{ value }}" {% if value == selected_occasion %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label class="flex flex-col gap-1">
+              <span class="font-body-sm text-body-sm text-on-surface-variant font-medium">Style</span>
+              <select name="style" id="id_style" onchange="updateLivePreview()" class="px-3 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none focus:ring-2 focus:ring-secondary/40" required>
+                <option value="">-- Select --</option>
+                {% for value, label in style_choices %}
+                <option value="{{ value }}" {% if value == selected_style %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </label>
+          </div>
+          <label class="flex flex-col gap-1 max-w-xs">
+            <span class="font-body-sm text-body-sm text-on-surface-variant font-medium">Budget (optional)</span>
+            <input type="number" name="budget" id="id_budget" min="0" step="0.01" value="{{ selected_budget }}" oninput="updateLivePreview()" placeholder="e.g. 80.00" class="px-3 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none focus:ring-2 focus:ring-secondary/40">
+          </label>
+          <button type="button" onclick="goToStep(2)" class="self-end py-2.5 px-6 rounded-full bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors flex items-center gap-1.5">
+            <span>Next: Choose Flowers</span><span class="material-symbols-outlined text-base">arrow_forward</span>
+          </button>
+        </div>
+
+        <div class="wizard-step bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-md" data-step="2" style="display:none;">
+          <div>
+            <span class="font-label-sm text-label-sm uppercase tracking-widest text-secondary">Step 2</span>
+            <h2 class="font-headline-sm text-headline-sm text-primary">Choose Your Flowers</h2>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
+            {% for entry in flowers_with_qty %}
+            <div class="flower-row bg-surface-container-low/40 rounded-xl p-space-sm flex flex-col gap-2" data-price="{{ entry.item.price }}" data-name="{{ entry.item.name }}">
+              <div class="w-full h-32 rounded-lg overflow-hidden bg-surface-container-low">
+                {% if entry.item.image %}
+                <img src="{{ entry.item.image.url }}" alt="{{ entry.item.name }}" class="w-full h-full object-cover">
+                {% else %}
+                <div class="w-full h-full flex items-center justify-center text-outline"><span class="material-symbols-outlined text-4xl">local_florist</span></div>
+                {% endif %}
+              </div>
+              <div class="flex items-start justify-between gap-2">
+                <h3 class="font-title-sm text-title-sm text-primary leading-snug">{{ entry.item.name }}</h3>
+                <span class="font-price-lg text-price-lg text-primary flex-shrink-0 text-right">${{ entry.item.price }}<span class="block font-label-sm text-label-sm text-outline">/ stem</span></span>
+              </div>
+              {% if not entry.item.in_stock %}
+              <span class="font-label-sm text-label-sm text-error">Currently unavailable</span>
+              {% endif %}
+              <div class="flex items-center justify-between bg-surface-container-lowest p-1.5 rounded-full mt-1">
+                <span class="font-label-sm text-label-sm text-on-surface-variant pl-2">Quantity</span>
+                <div class="flex items-center gap-2">
+                  <button type="button" onclick="stepQty(this, -1)" class="w-8 h-8 rounded-full bg-surface-container text-primary hover:bg-surface-container-high flex items-center justify-center">
+                    <span class="material-symbols-outlined text-base">remove</span>
+                  </button>
+                  <input type="number" name="qty_{{ entry.item.id }}" value="{{ entry.quantity }}" min="0" oninput="updateLivePreview()" class="qty-input w-10 text-center font-title-sm text-title-sm text-primary font-bold bg-transparent border-0 focus:outline-none" readonly>
+                  <button type="button" onclick="stepQty(this, 1)" class="w-8 h-8 rounded-full bg-primary text-on-primary hover:bg-primary-container flex items-center justify-center">
+                    <span class="material-symbols-outlined text-base">add</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            {% empty %}
+            <p class="col-span-full text-on-surface-variant">No flowers available right now.</p>
+            {% endfor %}
+          </div>
+          <div class="flex items-center justify-between pt-2">
+            <button type="button" onclick="goToStep(1)" class="py-2.5 px-6 rounded-full bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-base">arrow_back</span><span>Back</span>
+            </button>
+            <button type="button" onclick="goToStep(3)" class="py-2.5 px-6 rounded-full bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors flex items-center gap-1.5">
+              <span>Next: Card &amp; Note</span><span class="material-symbols-outlined text-base">arrow_forward</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="wizard-step bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-md" data-step="3" style="display:none;">
+          <div>
+            <span class="font-label-sm text-label-sm uppercase tracking-widest text-secondary">Step 3</span>
+            <h2 class="font-headline-sm text-headline-sm text-primary">Greeting Card &amp; Personal Note</h2>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-space-sm">
+            <label class="cursor-pointer">
+              <input type="radio" name="greeting_card_id" value="" class="hidden peer" onchange="updateLivePreview()" {% if not selected_card_id %}checked{% endif %}>
+              <div class="p-3 rounded-xl bg-surface-container-low peer-checked:bg-primary-container peer-checked:text-on-primary text-center flex flex-col items-center justify-center gap-2 transition-all h-full">
+                <span class="material-symbols-outlined text-2xl">block</span>
+                <span class="font-title-sm text-sm font-semibold">No Card</span>
+              </div>
+            </label>
+            {% for card in cards %}
+            <label class="cursor-pointer">
+              <input type="radio" name="greeting_card_id" value="{{ card.id }}" data-name="{{ card.name }}" data-price="{{ card.price }}" class="hidden peer" onchange="updateLivePreview()" {% if selected_card_id == card.id %}checked{% endif %}>
+              <div class="p-3 rounded-xl bg-surface-container-low peer-checked:bg-primary-container peer-checked:text-on-primary text-center flex flex-col items-center justify-center gap-2 transition-all h-full">
+                <span class="material-symbols-outlined text-2xl">mail</span>
+                <span class="font-title-sm text-sm font-semibold">{{ card.name }}</span>
+                <span class="font-label-sm text-label-sm">+${{ card.price }}</span>
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+          <label class="flex flex-col gap-1">
+            <span class="font-body-sm text-body-sm text-on-surface-variant font-medium">Personal Message</span>
+            <textarea name="card_message" id="id_card_message" maxlength="300" oninput="updateLivePreview()" rows="4" placeholder="Write a heartfelt note..." class="px-3 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none focus:ring-2 focus:ring-secondary/40 resize-none">{{ card_message }}</textarea>
+          </label>
+          <div class="flex items-center justify-between pt-2">
+            <button type="button" onclick="goToStep(2)" class="py-2.5 px-6 rounded-full bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-base">arrow_back</span><span>Back</span>
+            </button>
+            <button type="button" onclick="goToStep(4)" class="py-2.5 px-6 rounded-full bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors flex items-center gap-1.5">
+              <span>Next: Review</span><span class="material-symbols-outlined text-base">arrow_forward</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="wizard-step bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-md" data-step="4" style="display:none;">
+          <div>
+            <span class="font-label-sm text-label-sm uppercase tracking-widest text-secondary">Step 4</span>
+            <h2 class="font-headline-sm text-headline-sm text-primary">Review &amp; Save</h2>
+          </div>
+          <p class="font-body-md text-body-md text-on-surface-variant">Your live recipe and total are shown in the summary panel to the right. When you're happy with it, save it as a draft to keep editing later, or save the finished bouquet.</p>
+          <div class="flex items-center justify-between pt-2">
+            <button type="button" onclick="goToStep(3)" class="py-2.5 px-6 rounded-full bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-base">arrow_back</span><span>Back</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="lg:col-span-5 sticky top-28 flex flex-col gap-space-md">
+        <div class="bg-surface-container-lowest rounded-2xl p-space-md shadow-md">
+          <div class="flex items-center gap-2 mb-space-sm">
+            <span class="w-2.5 h-2.5 rounded-full bg-secondary animate-pulse"></span>
+            <span class="font-label-sm text-label-sm font-semibold uppercase tracking-wider text-primary">Live Recipe Preview</span>
+          </div>
+          <div class="flex items-center gap-2 mb-space-sm flex-wrap" id="live-occasion-style">
+            <span class="font-body-sm text-body-sm text-on-surface-variant">Pick an occasion &amp; style to begin.</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 bg-surface-container-low p-space-sm rounded-xl text-center mb-space-sm">
+            <div>
+              <span class="font-label-sm text-label-sm text-outline block">Volume</span>
+              <span class="font-title-md text-title-md text-primary font-bold" id="live-stem-count">0 Stems</span>
+            </div>
+            <div>
+              <span class="font-label-sm text-label-sm text-outline block">Running Total</span>
+              <span class="font-title-md text-title-md text-primary font-bold" id="live-total-mini">$0.00</span>
+            </div>
+          </div>
+
+          <div class="mb-space-sm">
+            <h4 class="font-title-sm text-title-sm text-primary font-semibold mb-2">Selected Stems</h4>
+            <div class="space-y-1.5 max-h-48 overflow-y-auto pr-1" id="live-recipe-list">
+              <p class="font-body-sm text-body-sm text-on-surface-variant">No flowers selected yet.</p>
+            </div>
+          </div>
+
+          <div id="live-budget-tracker" class="bg-surface-container-low p-space-sm rounded-xl flex-col gap-2 mb-space-sm" style="display:none;">
+            <div class="flex items-center justify-between">
+              <span class="font-label-sm text-label-sm uppercase tracking-wider text-primary font-semibold">Budget Tracker</span>
+              <span class="font-label-sm text-label-sm text-secondary font-bold" id="live-budget-text"></span>
+            </div>
+            <div class="w-full bg-surface-container-highest h-2.5 rounded-full overflow-hidden mt-1">
+              <div class="h-full rounded-full transition-all duration-500" id="live-budget-bar" style="width: 0%;"></div>
+            </div>
+          </div>
+
+          <div class="mb-space-sm">
+            <h4 class="font-title-sm text-title-sm text-primary font-semibold mb-2">Card &amp; Note</h4>
+            <p class="font-body-sm text-body-sm text-on-surface-variant" id="live-card-preview">No card selected.</p>
+            <p class="font-body-sm text-body-sm text-on-surface-variant italic mt-1" id="live-note-preview"></p>
+          </div>
+
+          <div class="border-t border-outline-variant/30 pt-3 flex items-baseline justify-between">
+            <span class="font-headline-sm text-headline-sm text-primary font-bold">Total</span>
+            <span class="font-price-lg text-price-lg text-primary font-extrabold" id="live-total">$0.00</span>
+          </div>
+
+          <div class="mt-space-md grid grid-cols-2 gap-2">
+            <button type="submit" name="action" value="draft" class="py-2.5 px-4 rounded-full bg-surface-container-low text-secondary font-label-md text-label-md hover:bg-surface-container transition-colors flex items-center justify-center gap-1.5">
+              <span class="material-symbols-outlined text-base">bookmark_border</span><span>Save Draft</span>
+            </button>
+            <button type="submit" name="action" value="save" class="py-2.5 px-4 rounded-full bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-all shadow-sm flex items-center justify-center gap-1.5">
+              <span class="material-symbols-outlined text-base">check_circle</span><span>Save Bouquet</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </form>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function stepQty(button, delta) {
+  const input = button.parentElement.querySelector('.qty-input');
+  const newVal = Math.max(0, parseInt(input.value || '0') + delta);
+  input.value = newVal;
+  updateLivePreview();
+}
+
+function goToStep(step) {
+  if (step === 2) {
+    const occasion = document.getElementById('id_occasion').value;
+    const style = document.getElementById('id_style').value;
+    if (!occasion || !style) { alert("Please choose an occasion and a style."); return; }
+  }
+  if (step === 3) {
+    let anyFlower = false;
+    document.querySelectorAll('.flower-row .qty-input').forEach(input => {
+      if (parseInt(input.value) > 0) anyFlower = true;
+    });
+    if (!anyFlower) { alert("Select at least one flower."); return; }
+  }
+
+  document.querySelectorAll('.wizard-step').forEach(div => {
+    div.style.display = (div.dataset.step === String(step)) ? "flex" : "none";
+  });
+
+  document.querySelectorAll('.stepper-btn').forEach(btn => {
+    const n = parseInt(btn.dataset.step);
+    const num = btn.querySelector('.stepper-num');
+    btn.classList.remove('bg-surface-container-lowest', 'shadow-sm', 'text-primary', 'font-semibold', 'opacity-70');
+    num.classList.remove('bg-primary', 'text-on-primary', 'bg-primary-container', 'bg-surface-container-high', 'text-on-surface-variant');
+    if (n === step) {
+      btn.classList.add('bg-surface-container-lowest', 'shadow-sm', 'text-primary', 'font-semibold');
+      num.classList.add('bg-primary', 'text-on-primary');
+    } else if (n < step) {
+      num.classList.add('bg-primary-container', 'text-on-primary');
+    } else {
+      btn.classList.add('opacity-70');
+      num.classList.add('bg-surface-container-high', 'text-on-surface-variant');
+    }
+  });
+
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function updateLivePreview() {
+  const occasionSelect = document.getElementById('id_occasion');
+  const styleSelect = document.getElementById('id_style');
+  const occasionLabel = occasionSelect.options[occasionSelect.selectedIndex]?.text || '';
+  const styleLabel = styleSelect.options[styleSelect.selectedIndex]?.text || '';
+  const occasionStyleEl = document.getElementById('live-occasion-style');
+  if (occasionSelect.value && styleSelect.value) {
+    occasionStyleEl.innerHTML = `<span class="px-2.5 py-1 rounded-full bg-surface-container-low text-primary font-label-sm text-label-sm">${occasionLabel}</span><span class="px-2.5 py-1 rounded-full bg-surface-container-low text-primary font-label-sm text-label-sm">${styleLabel}</span>`;
+  } else {
+    occasionStyleEl.innerHTML = `<span class="font-body-sm text-body-sm text-on-surface-variant">Pick an occasion & style to begin.</span>`;
+  }
+
+  let flowersTotal = 0;
+  let stemCount = 0;
+  let listHtml = "";
+  document.querySelectorAll('.flower-row').forEach(row => {
+    const input = row.querySelector('.qty-input');
+    const qty = parseInt(input.value) || 0;
+    if (qty > 0) {
+      const price = parseFloat(row.dataset.price);
+      const subtotal = qty * price;
+      flowersTotal += subtotal;
+      stemCount += qty;
+      listHtml += `<div class="flex items-center justify-between p-2 rounded-lg bg-surface-container-low/40">
+        <span class="font-body-sm text-body-sm text-primary">${qty}x ${row.dataset.name}</span>
+        <span class="font-label-sm text-label-sm text-primary font-semibold">$${subtotal.toFixed(2)}</span>
+      </div>`;
+    }
+  });
+  document.getElementById('live-recipe-list').innerHTML = listHtml || `<p class="font-body-sm text-body-sm text-on-surface-variant">No flowers selected yet.</p>`;
+  document.getElementById('live-stem-count').textContent = `${stemCount} Stem${stemCount === 1 ? '' : 's'}`;
+
+  const selectedCard = document.querySelector('input[name=greeting_card_id]:checked');
+  let cardPrice = 0;
+  const cardPreview = document.getElementById('live-card-preview');
+  if (selectedCard && selectedCard.value) {
+    cardPrice = parseFloat(selectedCard.dataset.price);
+    cardPreview.textContent = `${selectedCard.dataset.name} (+$${cardPrice.toFixed(2)})`;
+  } else {
+    cardPreview.textContent = "No card selected.";
+  }
+  const message = document.getElementById('id_card_message').value;
+  document.getElementById('live-note-preview').textContent = message ? `"${message}"` : "";
+
+  const total = flowersTotal + cardPrice;
+  document.getElementById('live-total').textContent = `$${total.toFixed(2)}`;
+  document.getElementById('live-total-mini').textContent = `$${total.toFixed(2)}`;
+
+  const budgetTracker = document.getElementById('live-budget-tracker');
+  const budgetVal = document.getElementById('id_budget').value;
+  if (budgetVal) {
+    const budget = parseFloat(budgetVal);
+    budgetTracker.style.display = 'flex';
+    const pct = budget > 0 ? Math.min(100, (total / budget) * 100) : 0;
+    const bar = document.getElementById('live-budget-bar');
+    bar.style.width = `${pct}%`;
+    bar.className = 'h-full rounded-full transition-all duration-500 ' + (total > budget ? 'bg-error' : 'bg-secondary');
+    document.getElementById('live-budget-text').textContent = `$${total.toFixed(2)} of $${budget.toFixed(2)} (${pct.toFixed(0)}%)`;
+  } else {
+    budgetTracker.style.display = 'none';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', updateLivePreview);
+</script>
+{% endblock %}

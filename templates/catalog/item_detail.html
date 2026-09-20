@@ -1,0 +1,12 @@
+<a href="{% url 'catalog:item_list' %}">&larr; Back to shop</a>
+
+<h1>{{ item.name }}</h1>
+{% if item.image %}
+  <img src="{{ item.image.url }}" alt="{{ item.name }}" width="400">
+{% endif %}
+
+<p><strong>Price:</strong> ${{ item.price }}</p>
+<p><strong>Category:</strong> {{ item.category.name }}</p>
+<p><strong>Tags:</strong> {% for tag in item.tags.all %}{{ tag.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+<p><strong>Availability:</strong> {% if item.in_stock %}{{ item.stock_quantity }} in stock{% else %}Out of stock{% endif %}</p>
+<p>{{ item.description }}</p>

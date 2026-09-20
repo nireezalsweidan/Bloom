@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'accounts',
+    'catalog',
 ]
 
 AUTH_USER_MODEL = "accounts.User"
@@ -127,3 +128,7 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# needed so uploaded product images are served in dev
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"

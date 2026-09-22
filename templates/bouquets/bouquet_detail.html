@@ -1,12 +1,143 @@
-<a href="{% url 'bouquets:bouquet_list' %}">&larr; Back to my bouquets</a>
-<h2>{{ bouquet.get_occasion_display }} Bouquet</h2>
-<p><strong>Style:</strong> {{ bouquet.get_style_display }}</p>
-<p><strong>Status:</strong> {{ bouquet.get_status_display }} | <strong>Source:</strong> {{ bouquet.get_source_display }}</p>
-<ul>
-{% for bi in bouquet.items.all %}
-  <li>{{ bi.quantity }} x {{ bi.item.name }} — ${{ bi.subtotal }}</li>
-{% endfor %}
-</ul>
-{% if bouquet.greeting_card %}<p><strong>Card:</strong> {{ bouquet.greeting_card.name }}</p>{% endif %}
-{% if bouquet.card_message %}<p><strong>Message:</strong> "{{ bouquet.card_message }}"</p>{% endif %}
-<p><strong>Total:</strong> ${{ bouquet.price }}</p>
+{% extends "base.html" %}
+{% block content %}
+
+<div class="max-w-[1320px] w-full mx-auto px-margin-mobile lg:px-margin pt-space-md pb-space-sm">
+  <nav aria-label="Breadcrumb" class="flex items-center gap-2 font-body-sm text-body-sm text-on-surface-variant">
+    <a class="hover:text-primary transition-colors flex items-center gap-1" href="{% url 'home' %}">
+      <span class="material-symbols-outlined text-sm">cottage</span><span>Home</span>
+    </a>
+    <span class="material-symbols-outlined text-xs text-outline">chevron_right</span>
+    <a class="hover:text-primary transition-colors" href="{% url 'bouquets:bouquet_list' %}">My Bouquets</a>
+    <span class="material-symbols-outlined text-xs text-outline">chevron_right</span>
+    <span class="text-primary font-medium">{{ bouquet.get_occasion_display }}</span>
+  </nav>
+</div>
+
+<section class="max-w-[1320px] w-full mx-auto px-margin-mobile lg:px-margin py-space-md">
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter lg:gap-space-xl items-start">
+
+    <div class="lg:col-span-7 flex flex-col gap-space-md">
+
+      <div class="relative w-full aspect-[4/3] bg-surface-container-low rounded-xl overflow-hidden shadow-sm flex items-center justify-center">
+        <span class="material-symbols-outlined text-8xl text-outline">local_florist</span>
+        <div class="absolute top-4 left-4 flex flex-wrap items-center gap-2">
+          {% if bouquet.status == "saved" %}
+          <span class="px-3 py-1 rounded-full bg-surface-container-lowest/90 backdrop-blur-md text-primary font-label-sm text-label-sm font-semibold shadow-sm">SAVED</span>
+          {% elif bouquet.status == "draft" %}
+          <span class="px-3 py-1 rounded-full bg-surface-container-highest text-on-surface font-label-sm text-label-sm font-semibold shadow-sm flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-tertiary"></span>DRAFT
+          </span>
+          {% else %}
+          <span class="px-3 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-semibold shadow-sm flex items-center gap-1">
+            <span class="material-symbols-outlined text-xs">check_circle</span>ORDERED
+          </span>
+          {% endif %}
+          {% if bouquet.source == "ai" %}
+          <span class="px-2.5 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm flex items-center gap-1 shadow-sm">
+            <span class="material-symbols-outlined text-xs">auto_awesome</span>AI Formulated
+          </span>
+          {% endif %}
+        </div>
+        <div class="absolute bottom-4 left-4 right-4 flex items-center justify-between px-3 py-1.5 rounded-full bg-primary/75 backdrop-blur-md text-on-primary font-label-sm text-label-sm">
+          <span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs text-secondary-fixed">spa</span>{{ bouquet.total_stems }} Stem{{ bouquet.total_stems|pluralize }}</span>
+          <span class="font-semibold text-secondary-fixed">{{ bouquet.get_style_display }}</span>
+        </div>
+      </div>
+
+      <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm">
+        <h3 class="font-title-md text-title-md text-primary font-semibold mb-3 flex items-center gap-2">
+          <span class="material-symbols-outlined text-secondary text-lg">local_florist</span>Stem Recipe
+        </h3>
+        <div class="space-y-2">
+          {% for bi in bouquet.items.all %}
+          <div class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container-low/50">
+            <div class="flex items-center gap-2.5">
+              <span class="w-8 h-8 rounded-full bg-surface-container-high text-primary flex items-center justify-center font-label-sm text-label-sm font-bold flex-shrink-0">{{ bi.quantity }}&times;</span>
+              <div>
+                <span class="font-body-sm text-body-sm text-primary font-medium block leading-tight">{{ bi.item.name }}</span>
+                <span class="font-label-sm text-label-sm text-secondary">${{ bi.unit_price }} each</span>
+              </div>
+            </div>
+            <span class="font-title-sm text-title-sm text-primary font-semibold">${{ bi.subtotal }}</span>
+          </div>
+          {% empty %}
+          <p class="font-body-sm text-body-sm text-on-surface-variant">No flowers in this bouquet yet.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      {% if bouquet.ai_recommendation.output_data.style_reasoning %}
+      <div class="p-4 rounded-lg bg-surface-container-low flex gap-3 items-start">
+        <div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center flex-shrink-0 mt-0.5">
+          <span class="material-symbols-outlined text-base">psychology</span>
+        </div>
+        <div class="flex-1">
+          <h5 class="font-title-sm text-title-sm text-primary font-semibold">AI Curatorial Logic</h5>
+          <p class="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-relaxed">{{ bouquet.ai_recommendation.output_data.style_reasoning }}</p>
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+
+    <div class="lg:col-span-5 flex flex-col gap-space-lg">
+      <div class="space-y-2">
+        <span class="font-label-sm text-label-sm text-secondary tracking-widest uppercase font-semibold">{{ bouquet.get_source_display }} Bouquet</span>
+        <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">{{ bouquet.get_occasion_display }}</h1>
+        <p class="font-body-md text-body-md text-on-surface-variant">{{ bouquet.get_style_display }} style{% if bouquet.budget %} &middot; Budget ${{ bouquet.budget }}{% endif %}</p>
+      </div>
+
+      <div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm space-y-2">
+        <div class="flex items-baseline justify-between">
+          <span class="font-price-lg text-price-lg text-primary font-semibold">${{ bouquet.price }}</span>
+          <span class="font-label-sm text-label-sm text-on-surface-variant">
+            {% if bouquet.status == "draft" %}Updated {{ bouquet.updated_at|timesince }} ago{% else %}Created {{ bouquet.created_at|date:"M j, Y" }}{% endif %}
+          </span>
+        </div>
+      </div>
+
+      {% if bouquet.greeting_card or bouquet.card_message %}
+      <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="material-symbols-outlined text-secondary text-lg">mail</span>
+          <h4 class="font-title-sm text-title-sm text-primary font-semibold">Greeting Card &amp; Message</h4>
+        </div>
+        {% if bouquet.greeting_card %}
+        <p class="font-body-sm text-body-sm text-on-surface-variant mb-2">{{ bouquet.greeting_card.name }} (${{ bouquet.greeting_card.price }})</p>
+        {% endif %}
+        {% if bouquet.card_message %}
+        <p class="font-headline-sm text-headline-sm text-primary italic">&ldquo;{{ bouquet.card_message }}&rdquo;</p>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <div class="flex flex-col gap-2.5">
+        {% if bouquet.status == "draft" %}
+        <a href="{% url 'bouquets:design_edit' pk=bouquet.pk %}" class="w-full py-3.5 px-5 rounded-full bg-secondary text-on-secondary hover:bg-secondary/90 font-title-sm text-title-sm font-semibold transition-all flex items-center justify-center gap-2 shadow-sm">
+          <span class="material-symbols-outlined text-lg">edit</span><span>Resume Editing</span>
+        </a>
+        {% else %}
+        <button type="button" onclick="alert('Cart is coming soon!')" class="w-full py-3.5 px-5 rounded-full bg-primary text-on-primary hover:bg-primary-container font-title-sm text-title-sm font-semibold transition-all flex items-center justify-center gap-2 shadow-sm">
+          <span class="material-symbols-outlined text-lg">local_mall</span><span>Add to Cart (${{ bouquet.price }})</span>
+        </button>
+        {% endif %}
+        <div class="grid grid-cols-2 gap-2">
+          <form method="post" action="{% url 'bouquets:bouquet_clone' pk=bouquet.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="w-full py-2.5 px-3 rounded-full bg-surface-container hover:bg-surface-container-high text-primary font-label-md text-label-md transition-colors flex items-center justify-center gap-1.5">
+              <span class="material-symbols-outlined text-base">content_copy</span><span>Clone Recipe</span>
+            </button>
+          </form>
+          <form method="post" action="{% url 'bouquets:bouquet_delete' pk=bouquet.pk %}" onsubmit="return confirm('Delete this bouquet permanently?');">
+            {% csrf_token %}
+            <button type="submit" class="w-full py-2.5 px-3 rounded-full bg-surface-container hover:bg-error-container hover:text-error text-outline font-label-md text-label-md transition-colors flex items-center justify-center gap-1.5">
+              <span class="material-symbols-outlined text-base">delete</span><span>Remove</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

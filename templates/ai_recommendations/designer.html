@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="relative w-full max-w-[1320px] mx-auto px-margin-mobile lg:px-margin pb-space-xl overflow-hidden">
+
+  <section class="pt-8 pb-10 text-center max-w-3xl mx-auto">
+    <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-surface-container-high text-primary mb-4 shadow-sm">
+      <span class="material-symbols-outlined text-sm text-secondary">auto_awesome</span>
+      <span class="font-label-sm text-label-sm uppercase tracking-wider font-semibold">Generative Botanical Engine</span>
+    </div>
+    <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight mb-4">Tell us the moment. We'll create the flowers.</h1>
+    <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">
+      Describe your occasion, style, and budget — our engine will recommend real flowers from our catalog, and you decide whether to keep them.
+    </p>
+  </section>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+    <div class="lg:col-span-5 bg-surface-container-lowest rounded-xl p-6 sm:p-8 shadow-sm flex flex-col gap-7">
+      <form method="post" id="ai-generate-form" class="contents">
+        {% csrf_token %}
+        <input type="hidden" name="form_action" value="generate">
+
+        <div>
+          <label class="block font-title-sm text-title-sm text-primary mb-3 font-semibold">1. What is the occasion?</label>
+          <div class="flex flex-wrap gap-2">
+            {% for value, label in occasion_choices %}
+            <label class="cursor-pointer">
+              <input type="radio" name="occasion" value="{{ value }}" class="hidden peer" {% if forloop.first %}checked{% endif %} required>
+              <span class="px-3.5 py-1.5 rounded-full font-label-md text-label-md transition-all inline-block bg-surface-container text-on-surface hover:bg-surface-container-high peer-checked:bg-primary peer-checked:text-on-primary peer-checked:shadow-sm">{{ label }}</span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-title-sm text-title-sm text-primary mb-3 font-semibold">2. Preferred Floral Aesthetic</label>
+          <div class="grid grid-cols-2 gap-3">
+            {% for value, label in style_choices %}
+            <label class="cursor-pointer">
+              <input type="radio" name="style" value="{{ value }}" class="hidden peer" {% if forloop.first %}checked{% endif %} required>
+              <div class="p-3.5 rounded-lg bg-surface-container-lowest peer-checked:bg-surface-container-low peer-checked:shadow-sm transition-all flex flex-col gap-2 h-full">
+                <div class="flex items-center justify-between">
+                  <span class="material-symbols-outlined text-secondary text-xl">spa</span>
+                  <div class="w-4 h-4 rounded-full bg-surface-container peer-checked:bg-primary"></div>
+                </div>
+                <h3 class="font-title-sm text-title-sm text-primary font-semibold">{{ label }}</h3>
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-title-sm text-title-sm text-primary mb-3 font-semibold">3. Chromatic Palette &amp; Mood</label>
+          <div class="space-y-2">
+            {% for palette in color_palette_choices %}
+            <label class="flex items-center justify-between p-3 rounded-lg bg-surface-container-lowest hover:bg-surface-container-low cursor-pointer transition-colors">
+              <div class="flex items-center gap-3">
+                <input class="accent-primary w-4 h-4" name="color_palette" type="radio" value="{{ palette }}" {% if forloop.first %}checked{% endif %}>
+                <span class="font-body-md text-body-md text-primary font-medium">{{ palette }}</span>
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label class="font-title-sm text-title-sm text-primary font-semibold">4. Atelier Budget</label>
+            <span class="font-headline-sm text-headline-sm text-primary font-bold" id="budget-display">$95.00</span>
+          </div>
+          <input class="w-full h-2 bg-surface-container rounded-lg appearance-none cursor-pointer accent-primary" id="budget-range" name="budget" max="250" min="45" step="5" type="range" value="95" oninput="document.getElementById('budget-display').textContent = '$' + this.value + '.00'">
+          <div class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm mt-1.5">
+            <span>$45</span><span>$150</span><span>$250</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="font-title-sm text-title-sm text-primary font-semibold mb-2 block">5. Enclosed Card Message</label>
+          <div class="flex items-center gap-2 mb-2.5 flex-wrap">
+            {% for label, msg in card_tones %}
+            <button type="button" class="tone-btn text-on-surface bg-surface-container hover:bg-surface-container-high text-label-sm font-label-sm px-2.5 py-1 rounded-full" onclick="document.getElementById('card_tone_text').value = '{{ msg|safe|escapejs }}'">{{ label }}</button>
+            {% endfor %}
+          </div>
+          <textarea name="card_tone_text" id="card_tone_text" class="w-full p-3.5 rounded-lg bg-surface font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary resize-none" rows="3" placeholder="Write a note, or choose a tone above...">{{ card_tones.0.1 }}</textarea>
+        </div>
+
+        <div class="pt-2">
+          <button class="w-full py-4 rounded-full bg-primary text-on-primary font-title-sm text-title-sm font-semibold hover:bg-primary-container transition-all flex items-center justify-center gap-2.5 shadow-md" type="submit">
+            <span class="material-symbols-outlined text-xl text-secondary-fixed">auto_awesome</span>
+            <span>Generate My Bouquet</span>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div class="lg:col-span-7 flex flex-col gap-6">
+      {% if latest_recommendation %}
+        {% if latest_recommendation.status == "generated" and latest_recommendation.output_data %}
+        <div class="bg-surface-container-lowest rounded-xl p-6 sm:p-8 shadow-sm flex flex-col gap-6">
+          <div class="flex flex-wrap items-center justify-between gap-3 pb-2">
+            <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-secondary-fixed/40 text-primary">
+              <span class="material-symbols-outlined text-sm">verified</span>
+              <span class="font-label-sm text-label-sm font-semibold uppercase tracking-wider">Recommendation Ready</span>
+            </div>
+          </div>
+
+          <div>
+            <span class="font-label-sm text-label-sm text-secondary uppercase tracking-widest font-semibold">AI Curated Composition</span>
+            <h3 class="font-headline-md text-headline-md text-primary font-semibold leading-tight mt-1">{{ latest_recommendation.get_occasion_display }} &middot; {{ latest_recommendation.get_style_display }}</h3>
+            <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">{{ latest_recommendation.output_data.style_reasoning }}</p>
+          </div>
+
+          <div class="p-4 rounded-lg bg-surface-container-low flex flex-col gap-1">
+            <div class="flex items-baseline justify-between">
+              <span class="font-price-lg text-price-lg text-primary font-bold">${{ latest_recommendation.output_data.total_price|floatformat:2 }}</span>
+              <span class="font-label-md text-label-md text-secondary font-semibold">Your budget: ${{ latest_recommendation.budget }}</span>
+            </div>
+          </div>
+
+          <div>
+            <h4 class="font-title-sm text-title-sm text-primary font-semibold mb-3">Stem Recipe</h4>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+              {% for flower in latest_recommendation.output_data.flowers %}
+              <div class="p-2.5 rounded-lg bg-surface-container-low flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-full bg-tertiary-fixed flex-shrink-0 flex items-center justify-center text-primary font-title-sm text-title-sm font-bold">{{ flower.quantity }}&times;</div>
+                <div class="min-w-0">
+                  <p class="font-title-sm text-title-sm text-primary font-semibold truncate">{{ flower.name }}</p>
+                  <p class="font-label-sm text-label-sm text-outline truncate">${{ flower.unit_price }} each</p>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          {% if latest_recommendation.output_data.greeting_card_name %}
+          <div class="p-4 rounded-lg bg-surface-container-lowest shadow-sm flex items-center gap-3.5">
+            <span class="material-symbols-outlined text-2xl text-secondary flex-shrink-0">mark_email_read</span>
+            <div class="min-w-0">
+              <span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-semibold">{{ latest_recommendation.output_data.greeting_card_name }}</span>
+              <p class="font-headline-sm text-headline-sm text-primary italic mt-0.5">&ldquo;{{ latest_recommendation.output_data.card_message }}&rdquo;</p>
+            </div>
+          </div>
+          {% endif %}
+
+          <div class="flex flex-col gap-2.5">
+            <form method="post" action="{% url 'ai_recommendations:accept' pk=latest_recommendation.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="w-full py-3.5 px-5 rounded-full bg-primary text-on-primary font-title-sm text-title-sm font-semibold hover:bg-primary-container transition-all flex items-center justify-center gap-2 shadow-sm">
+                <span class="material-symbols-outlined text-lg">check_circle</span><span>Accept &amp; Save to My Bouquets</span>
+              </button>
+            </form>
+            <div class="grid grid-cols-2 gap-2">
+              <form method="post" action="{% url 'ai_recommendations:reject' pk=latest_recommendation.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="w-full py-2.5 px-3 rounded-full bg-surface-container hover:bg-surface-container-high text-primary font-label-md text-label-md transition-colors flex items-center justify-center gap-1.5">
+                  <span class="material-symbols-outlined text-base">close</span><span>Reject</span>
+                </button>
+              </form>
+              <a href="{% url 'bouquets:design_new' %}" class="py-2.5 px-3 rounded-full bg-surface-container hover:bg-surface-container-high text-primary font-label-md text-label-md transition-colors flex items-center justify-center gap-1.5">
+                <span class="material-symbols-outlined text-base">tune</span><span>Fine-Tune in Studio</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {% elif latest_recommendation.status == "failed" %}
+        <div class="bg-error-container text-on-error-container rounded-xl p-6 shadow-sm">
+          <p class="font-title-sm text-title-sm font-semibold mb-1">Generation failed</p>
+          <p class="font-body-sm text-body-sm">{{ latest_recommendation.error_message }}</p>
+        </div>
+        {% endif %}
+      {% else %}
+      <div class="bg-surface-container-lowest rounded-xl p-8 shadow-sm text-center text-on-surface-variant">
+        Fill in your preferences and click "Generate My Bouquet" to see a recommendation here.
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if history %}
+  <section class="mt-14 pt-10">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="font-headline-md text-headline-md text-primary font-semibold">Your Recent Generations</h2>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {% for rec in history %}
+      <div class="bg-surface-container-lowest rounded-xl p-4 shadow-sm flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          {% if rec.status == "accepted" %}
+          <span class="px-2.5 py-0.5 rounded-full bg-primary text-on-primary font-label-sm text-label-sm font-semibold">Accepted</span>
+          {% elif rec.status == "rejected" %}
+          <span class="px-2.5 py-0.5 rounded-full bg-surface-variant text-on-surface-variant font-label-sm text-label-sm font-semibold">Rejected</span>
+          {% elif rec.status == "failed" %}
+          <span class="px-2.5 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-semibold">Failed</span>
+          {% else %}
+          <span class="px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">Generated</span>
+          {% endif %}
+          {% if rec.output_data.total_price %}
+          <span class="font-label-sm text-label-sm font-bold text-primary">${{ rec.output_data.total_price|floatformat:2 }}</span>
+          {% endif %}
+        </div>
+        <div>
+          <h3 class="font-title-sm text-title-sm text-primary font-semibold">{{ rec.get_occasion_display }}</h3>
+          <p class="font-body-sm text-body-sm text-on-surface-variant">{{ rec.get_style_display }}</p>
+        </div>
+        <p class="font-label-sm text-label-sm text-on-surface-variant">{{ rec.created_at|date:"M j, Y" }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+</div>
+
+{% endblock %}

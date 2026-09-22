@@ -29,9 +29,11 @@
         <a class="px-4 py-1.5 text-on-surface-variant hover:text-on-surface transition-colors font-body-sm text-body-sm rounded-full" href="{% url 'home' %}">Home</a>
         <a class="px-4 py-1.5 {% if request.resolver_match.namespace == 'catalog' %}text-primary font-semibold bg-surface-container-low{% else %}text-on-surface-variant hover:text-on-surface{% endif %} transition-colors font-body-sm text-body-sm rounded-full" href="{% url 'catalog:item_list' %}">Shop</a>
         <a class="px-4 py-1.5 {% if 'design' in request.path %}text-primary font-semibold bg-surface-container-low{% else %}text-on-surface-variant hover:text-on-surface{% endif %} transition-colors font-body-sm text-body-sm rounded-full" href="{% url 'bouquets:design_new' %}">Bouquet Studio</a>
-        <a class="px-4 py-1.5 text-on-surface-variant hover:text-on-surface transition-colors font-body-sm text-body-sm rounded-full inline-flex items-center gap-1.5" href="#">
+        <a class="px-4 py-1.5 {% if 'ai_recommendations' in request.resolver_match.app_name %}text-primary font-semibold bg-surface-container-low{% else %}text-on-surface-variant hover:text-on-surface{% endif %} transition-colors font-body-sm text-body-sm rounded-full inline-flex items-center gap-1.5" href="{% url 'ai_recommendations:designer' %}">
           <span>AI Floral Designer</span>
-          <span class="font-label-sm text-label-sm bg-tertiary-fixed text-on-tertiary-fixed px-2 py-0.5 rounded-full font-semibold">Coming Soon</span>
+          <span class="font-label-sm text-label-sm bg-tertiary-fixed text-on-tertiary-fixed px-2 py-0.5 rounded-full font-semibold inline-flex items-center gap-0.5">
+            <span class="material-symbols-outlined text-xs">auto_awesome</span>Magic
+          </span>
         </a>
         {% if user.is_authenticated %}
         <a class="px-4 py-1.5 {% if 'my-bouquets' in request.path %}text-primary font-semibold bg-surface-container-low{% else %}text-on-surface-variant hover:text-on-surface{% endif %} transition-colors font-body-sm text-body-sm rounded-full" href="{% url 'bouquets:bouquet_list' %}">My Bouquets</a>

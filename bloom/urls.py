@@ -11,6 +11,7 @@ urlpatterns = [
     path("shop/", include("catalog.urls")),
     path("bouquet/", include("bouquets.urls")),
     path("", views.home, name="home"),
+    path("ai/", include("ai_recommendations.urls")),
 ]
 
 if settings.DEBUG:

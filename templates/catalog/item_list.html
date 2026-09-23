@@ -161,9 +161,18 @@
                 <span class="font-label-sm text-label-sm text-outline">Atelier Price</span>
                 <span class="font-price-lg text-price-lg text-primary font-bold">${{ item.price }}</span>
               </div>
-              <a href="{% url 'catalog:item_detail' slug=item.slug %}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-transform active:scale-95 shadow-sm">
-                <span class="material-symbols-outlined text-sm">visibility</span><span>View</span>
-              </a>
+              <div class="flex items-center gap-2">
+                <form method="post" action="{% url 'cart:add_item' item_id=item.id %}">
+                  {% csrf_token %}
+                  <button type="submit" {% if not item.in_stock %}disabled{% endif %} aria-label="Add {{ item.name }} to cart"
+                    class="w-9 h-9 rounded-full bg-primary text-on-primary hover:bg-primary-container flex items-center justify-center transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span class="material-symbols-outlined text-sm">add_shopping_cart</span>
+                  </button>
+                </form>
+                <a href="{% url 'catalog:item_detail' slug=item.slug %}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surface-container text-primary font-label-md text-label-md hover:bg-surface-container-high transition-transform active:scale-95 shadow-sm">
+                  <span class="material-symbols-outlined text-sm">visibility</span><span>View</span>
+                </a>
+              </div>
             </div>
           </div>
         </div>

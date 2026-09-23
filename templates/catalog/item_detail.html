@@ -72,10 +72,14 @@
             <span class="material-symbols-outlined text-base">add</span>
           </button>
         </div>
-        <button {% if not item.in_stock %}disabled{% endif %} type="button" onclick="alert('Cart is coming soon!')" class="flex-1 py-4 px-6 bg-primary text-on-primary rounded-full hover:bg-primary-container transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-          <span class="material-symbols-outlined text-lg">local_mall</span>
-          <span class="font-title-sm text-title-sm font-semibold tracking-wide">{% if item.in_stock %}Add to Cart{% else %}Out of Stock{% endif %}</span>
-        </button>
+        <form method="post" action="{% url 'cart:add_item' item_id=item.id %}" class="flex-1">
+          {% csrf_token %}
+          <input type="hidden" name="quantity" id="cart-qty-input" value="1">
+          <button type="submit" {% if not item.in_stock %}disabled{% endif %} class="w-full py-4 px-6 bg-primary text-on-primary rounded-full hover:bg-primary-container transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+            <span class="material-symbols-outlined text-lg">local_mall</span>
+            <span class="font-title-sm text-title-sm font-semibold tracking-wide">{% if item.in_stock %}Add to Cart{% else %}Out of Stock{% endif %}</span>
+          </button>
+        </form>
       </div>
     </div>
   </div>

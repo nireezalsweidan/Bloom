@@ -183,9 +183,12 @@
           <span class="font-price-lg text-price-lg text-primary font-bold">${{ item.price }}</span>
           <div class="flex items-center gap-2">
             <a class="px-3 py-1.5 rounded-full bg-surface-container text-primary hover:bg-surface-container-high font-label-sm text-label-sm font-semibold transition-colors" href="{% url 'bouquets:design_new' %}">Customize</a>
-            <button aria-label="Add to cart" onclick="alert('Cart is coming soon!')" class="w-9 h-9 rounded-full bg-primary text-on-primary hover:bg-primary-container flex items-center justify-center transition-colors shadow-sm">
-              <span class="material-symbols-outlined text-sm">add_shopping_cart</span>
-            </button>
+            <form method="post" action="{% url 'cart:add_item' item_id=item.id %}">
+              {% csrf_token %}
+              <button type="submit" aria-label="Add to cart" class="w-9 h-9 rounded-full bg-primary text-on-primary hover:bg-primary-container flex items-center justify-center transition-colors shadow-sm">
+                <span class="material-symbols-outlined text-sm">add_shopping_cart</span>
+              </button>
+            </form>
           </div>
         </div>
       </div>

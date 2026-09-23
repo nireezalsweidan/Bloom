@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="max-w-[1320px] mx-auto w-full px-margin-mobile lg:px-margin py-space-lg">
+  <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight mb-space-lg">Checkout</h1>
+
+  <form method="post" class="grid grid-cols-1 lg:grid-cols-12 gap-space-xl items-start">
+    {% csrf_token %}
+
+    <div class="lg:col-span-7 flex flex-col gap-space-xl">
+      <section class="bg-surface-container-lowest rounded-xl p-6 sm:p-8 shadow-sm flex flex-col gap-6">
+        <h2 class="font-headline-sm text-headline-sm text-primary">1. Delivery Details</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="flex flex-col gap-1.5 sm:col-span-2">
+            <label class="font-label-md text-label-md text-primary font-semibold">Recipient Full Name *</label>
+            <input name="recipient_name" required class="w-full px-4 py-3 rounded-lg bg-surface-container-low text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-secondary" type="text">
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="font-label-md text-label-md text-primary font-semibold">Phone *</label>
+            <input name="phone" required class="w-full px-4 py-3 rounded-lg bg-surface-container-low text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-secondary" type="tel">
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="font-label-md text-label-md text-primary font-semibold">City *</label>
+            <input name="city" required class="w-full px-4 py-3 rounded-lg bg-surface-container-low text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-secondary" type="text">
+          </div>
+        </div>
+        <div class="flex flex-col gap-4">
+          <div class="flex flex-col gap-1.5">
+            <label class="font-label-md text-label-md text-primary font-semibold">Street Address *</label>
+            <input name="address" required class="w-full px-4 py-3 rounded-lg bg-surface-container-low text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-secondary" type="text">
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1.5">
+              <label class="font-label-md text-label-md text-primary font-semibold">Apt / Suite</label>
+              <input name="apartment" class="w-full px-4 py-3 rounded-lg bg-surface-container-low text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-secondary" type="text">
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label class="font-label-md text-label-md text-primary font-semibold">Postal Code *</label>
+              <input name="postal_code" required class="w-full px-4 py-3 rounded-lg bg-surface-container-low text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-secondary" type="text">
+            </div>
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="font-label-md text-label-md text-primary font-semibold">Delivery Instructions (Optional)</label>
+            <textarea name="instructions" rows="2" class="w-full px-4 py-3 rounded-lg bg-surface-container-low text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-secondary"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <section class="bg-surface-container-lowest rounded-xl p-6 sm:p-8 shadow-sm flex flex-col gap-6">
+        <h2 class="font-headline-sm text-headline-sm text-primary">2. Payment Method</h2>
+        <div class="grid grid-cols-2 gap-3">
+          <label class="cursor-pointer">
+            <input type="radio" name="payment_method" value="cash" class="hidden peer" checked>
+            <div class="p-4 rounded-xl bg-surface-container-low peer-checked:bg-primary peer-checked:text-on-primary text-center flex flex-col items-center gap-2 transition-all">
+              <span class="material-symbols-outlined text-2xl">payments</span>
+              <span class="font-title-sm text-title-sm font-semibold">Cash on Delivery</span>
+            </div>
+          </label>
+          <label class="cursor-pointer">
+            <input type="radio" name="payment_method" value="card" class="hidden peer">
+            <div class="p-4 rounded-xl bg-surface-container-low peer-checked:bg-primary peer-checked:text-on-primary text-center flex flex-col items-center gap-2 transition-all">
+              <span class="material-symbols-outlined text-2xl">credit_card</span>
+              <span class="font-title-sm text-title-sm font-semibold">Credit Card</span>
+            </div>
+          </label>
+        </div>
+        <p class="font-label-sm text-label-sm text-outline">This demo checkout does not process real card payments — no card details are collected.</p>
+      </section>
+    </div>
+
+    <aside class="lg:col-span-5 lg:sticky lg:top-28 flex flex-col gap-space-md">
+      <div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-md">
+        <h3 class="font-headline-sm text-headline-sm text-primary pb-space-sm mb-space-sm">Order Review</h3>
+        <div class="flex flex-col gap-3 divide-y divide-surface-container-low mb-space-md">
+          {% for ci in cart_items %}
+          <div class="flex items-center gap-3 pt-2 first:pt-0">
+            <div class="flex-1 min-w-0">
+              <p class="font-title-sm text-title-sm text-primary truncate">{{ ci.name }}</p>
+              <p class="font-label-sm text-label-sm text-outline">Qty: {{ ci.quantity }}</p>
+            </div>
+            <span class="font-title-sm text-title-sm text-primary font-semibold">${{ ci.subtotal }}</span>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="space-y-2 font-body-sm text-body-sm border-t border-surface-container-low pt-3">
+          <div class="flex justify-between text-on-surface-variant"><span>Subtotal</span><span class="text-primary font-medium">${{ subtotal }}</span></div>
+          <div class="flex justify-between text-on-surface-variant">
+            <span>Delivery Fee</span>
+            {% if delivery_fee == 0 %}<span class="text-secondary font-semibold">Free</span>{% else %}<span class="text-primary font-medium">${{ delivery_fee }}</span>{% endif %}
+          </div>
+          <div class="flex justify-between items-baseline pt-2 border-t border-surface-container-high mt-1">
+            <span class="font-title-md text-title-md text-primary font-bold">Total</span>
+            <span class="font-price-lg text-price-lg text-primary font-bold">${{ total }}</span>
+          </div>
+        </div>
+        <button type="submit" class="w-full mt-space-md py-4 px-6 bg-primary text-on-primary rounded-full hover:bg-primary-container transition-all shadow-md font-title-sm text-title-sm font-semibold flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-lg">lock</span><span>Place Order &bull; ${{ total }}</span>
+        </button>
+      </div>
+    </aside>
+  </form>
+</div>
+{% endblock %}

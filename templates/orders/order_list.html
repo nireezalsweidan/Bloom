@@ -1,0 +1,20 @@
+{# templates/orders/order_list.html #}
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-[1000px] mx-auto w-full px-margin-mobile lg:px-margin py-space-lg">
+  <h1 class="font-headline-lg text-headline-lg text-primary mb-space-lg">My Orders</h1>
+  <div class="flex flex-col gap-3">
+    {% for order in orders %}
+    <a href="{% url 'orders:order_detail' order_number=order.order_number %}" class="bg-surface-container-lowest rounded-xl p-5 shadow-sm flex items-center justify-between hover:shadow-md transition-shadow">
+      <div>
+        <p class="font-title-sm text-title-sm text-primary font-semibold">{{ order.order_number }}</p>
+        <p class="font-label-sm text-label-sm text-outline">{{ order.date|date:"M j, Y" }} &middot; {{ order.get_status_display }}</p>
+      </div>
+      <span class="font-price-lg text-price-lg text-primary font-bold">${{ order.total_price }}</span>
+    </a>
+    {% empty %}
+    <p class="text-on-surface-variant">You haven't placed any orders yet.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

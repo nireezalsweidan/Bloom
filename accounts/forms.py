@@ -18,3 +18,13 @@ class SignUpForm(UserCreationForm):
         if commit:
             user.save()
         return user
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ["email", "phone_number", "delivery_address"]
+        widgets = {
+            "email": forms.EmailInput(attrs={"class": "w-full px-4 py-3 rounded-lg bg-surface-container-low text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-secondary"}),
+            "phone_number": forms.TextInput(attrs={"class": "w-full px-4 py-3 rounded-lg bg-surface-container-low text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-secondary"}),
+            "delivery_address": forms.TextInput(attrs={"class": "w-full px-4 py-3 rounded-lg bg-surface-container-low text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-secondary"}),
+        }

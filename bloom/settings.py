@@ -42,6 +42,9 @@ INSTALLED_APPS = [
     'catalog',
     'bouquets',
     'ai_recommendations',
+    'cart',
+    'orders',
+    'payments',
 ]
 
 AUTH_USER_MODEL = "accounts.User"
@@ -75,6 +78,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'cart.context_processors.cart_badge',
             ],
         },
     },

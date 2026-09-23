@@ -19,8 +19,8 @@
       <a class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-on-primary font-title-sm text-title-sm shadow-md hover:bg-primary-container hover:-translate-y-0.5 transition-all" href="{% url 'bouquets:design_new' %}">
         <span class="material-symbols-outlined text-lg">add_circle</span><span>Design a New Bouquet</span>
       </a>
-      <a class="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-surface-container-high text-primary hover:bg-surface-container-highest font-title-sm text-title-sm transition-all shadow-sm" href="#">
-        <span class="material-symbols-outlined text-base text-tertiary">auto_awesome</span><span>AI Bouquet Generator (Coming Soon)</span>
+      <a class="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-surface-container-high text-primary hover:bg-surface-container-highest font-title-sm text-title-sm transition-all shadow-sm" href="{% url 'ai_recommendations:designer' %}">
+        <span class="material-symbols-outlined text-base text-tertiary">auto_awesome</span><span>AI Bouquet Generator</span>
       </a>
     </div>
   </div>
@@ -154,9 +154,12 @@
             <span class="material-symbols-outlined text-base">edit</span><span>Resume Editing</span>
           </a>
           {% else %}
-          <button type="button" onclick="alert('Cart is coming soon!')" class="flex-1 py-3 px-4 rounded-full bg-primary text-on-primary hover:bg-primary-container font-title-sm text-title-sm flex items-center justify-center gap-2 shadow-sm transition-all">
-            <span class="material-symbols-outlined text-base">shopping_bag</span><span>Add to Cart (${{ bouquet.price }})</span>
-          </button>
+          <form method="post" action="{% url 'cart:add_bouquet' bouquet_id=bouquet.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="flex-1 py-3 px-4 rounded-full bg-primary text-on-primary hover:bg-primary-container font-title-sm text-title-sm flex items-center justify-center gap-2 shadow-sm transition-all">
+              <span class="material-symbols-outlined text-base">shopping_bag</span><span>Add to Cart (${{ bouquet.price }})</span>
+            </button>
+          </form>
           {% endif %}
         </div>
       </div>

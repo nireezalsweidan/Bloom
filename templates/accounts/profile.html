@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-[700px] mx-auto w-full px-margin-mobile lg:px-margin py-space-lg">
+  <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight mb-space-lg">My Profile</h1>
+
+  <div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm">
+    <div class="flex items-center gap-4 mb-space-lg pb-space-md border-b border-surface-container-low">
+      <div class="w-14 h-14 rounded-full bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center font-headline-sm text-headline-sm font-bold">
+        {{ user.username|slice:":1"|upper }}
+      </div>
+      <div>
+        <p class="font-title-md text-title-md text-primary font-semibold">{{ user.username }}</p>
+        <p class="font-label-sm text-label-sm text-secondary uppercase tracking-wider">{{ user.get_role_display }}</p>
+      </div>
+    </div>
+
+    <form method="post" class="flex flex-col gap-4">
+      {% csrf_token %}
+      <div class="flex flex-col gap-1.5">
+        <label class="font-label-md text-label-md text-primary font-semibold">Email</label>
+        {{ form.email }}
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="font-label-md text-label-md text-primary font-semibold">Phone Number</label>
+        {{ form.phone_number }}
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="font-label-md text-label-md text-primary font-semibold">Delivery Address</label>
+        {{ form.delivery_address }}
+      </div>
+      <button type="submit" class="mt-2 py-3 px-6 rounded-full bg-primary text-on-primary font-title-sm text-title-sm font-semibold hover:bg-primary-container transition-all self-start">
+        Save Changes
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}

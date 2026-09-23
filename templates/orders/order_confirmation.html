@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="max-w-[800px] mx-auto w-full px-margin-mobile lg:px-margin py-space-xl text-center">
+  <div class="w-16 h-16 rounded-full bg-secondary-container flex items-center justify-center text-primary mx-auto mb-space-md">
+    <span class="material-symbols-outlined text-4xl">check_circle</span>
+  </div>
+  <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight mb-2">Order Confirmed!</h1>
+  <p class="font-body-lg text-body-lg text-on-surface-variant mb-space-lg">Thank you — your bouquet is on its way to being prepared.</p>
+
+  <div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm text-left">
+    <div class="flex items-center justify-between pb-space-sm mb-space-sm border-b border-surface-container-low">
+      <span class="font-title-md text-title-md text-primary font-semibold">Order {{ order.order_number }}</span>
+      <span class="font-label-sm text-label-sm text-outline">{{ order.date|date:"M j, Y, g:i A" }}</span>
+    </div>
+
+    <div class="flex flex-col gap-3 divide-y divide-surface-container-low mb-space-md">
+      {% for oi in order.items.all %}
+      <div class="flex items-center justify-between pt-2 first:pt-0">
+        <div>
+          <p class="font-title-sm text-title-sm text-primary">{{ oi.name_snapshot }}</p>
+          <p class="font-label-sm text-label-sm text-outline">Qty: {{ oi.quantity }} &middot; ${{ oi.unit_price }} each</p>
+        </div>
+        <span class="font-title-sm text-title-sm text-primary font-semibold">${{ oi.subtotal }}</span>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="space-y-2 font-body-sm text-body-sm border-t border-surface-container-low pt-3">
+      <div class="flex justify-between text-on-surface-variant"><span>Subtotal</span><span class="text-primary font-medium">${{ order.subtotal }}</span></div>
+      <div class="flex justify-between text-on-surface-variant"><span>Delivery Fee</span><span class="text-primary font-medium">${{ order.delivery_fee }}</span></div>
+      <div class="flex justify-between items-baseline pt-2 border-t border-surface-container-high mt-1">
+        <span class="font-title-md text-title-md text-primary font-bold">Total Paid</span>
+        <span class="font-price-lg text-price-lg text-primary font-bold">${{ order.total_price }}</span>
+      </div>
+    </div>
+
+    <div class="mt-space-md pt-space-md border-t border-surface-container-low">
+      <p class="font-title-sm text-title-sm text-primary font-semibold mb-1">Delivering to</p>
+      <p class="font-body-sm text-body-sm text-on-surface-variant">{{ order.recipient_name }} &middot; {{ order.phone }}</p>
+      <p class="font-body-sm text-body-sm text-on-surface-variant">{{ order.delivery_address }}{% if order.apartment %}, {{ order.apartment }}{% endif %}, {{ order.city }} {{ order.postal_code }}</p>
+    </div>
+
+    <div class="mt-space-md pt-space-md border-t border-surface-container-low flex items-center gap-2">
+      <span class="font-label-sm text-label-sm bg-surface-container-high text-primary px-3 py-1 rounded-full font-semibold">{{ order.payment.get_method_display }}</span>
+      <span class="font-label-sm text-label-sm bg-surface-container-high text-primary px-3 py-1 rounded-full font-semibold">{{ order.payment.get_status_display }}</span>
+    </div>
+  </div>
+
+  <div class="flex items-center justify-center gap-3 mt-space-lg">
+    <a href="{% url 'catalog:item_list' %}" class="px-6 py-3 rounded-full bg-primary text-on-primary font-title-sm text-title-sm hover:bg-primary-container transition-all">Continue Shopping</a>
+    <a href="{% url 'orders:order_list' %}" class="px-6 py-3 rounded-full bg-surface-container-low text-primary font-title-sm text-title-sm hover:bg-surface-container transition-colors">View My Orders</a>
+  </div>
+</div>
+{% endblock %}

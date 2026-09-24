@@ -1,19 +1,141 @@
-{# templates/orders/order_list.html #}
 {% extends "base.html" %}
 {% block content %}
-<div class="max-w-[1000px] mx-auto w-full px-margin-mobile lg:px-margin py-space-lg">
-  <h1 class="font-headline-lg text-headline-lg text-primary mb-space-lg">My Orders</h1>
-  <div class="flex flex-col gap-3">
-    {% for order in orders %}
-    <a href="{% url 'orders:order_detail' order_number=order.order_number %}" class="bg-surface-container-lowest rounded-xl p-5 shadow-sm flex items-center justify-between hover:shadow-md transition-shadow">
-      <div>
-        <p class="font-title-sm text-title-sm text-primary font-semibold">{{ order.order_number }}</p>
-        <p class="font-label-sm text-label-sm text-outline">{{ order.date|date:"M j, Y" }} &middot; {{ order.get_status_display }}</p>
+
+<div class="max-w-[1320px] mx-auto px-margin-mobile lg:px-margin py-space-lg">
+  <nav aria-label="Breadcrumb" class="flex items-center gap-2 mb-4 text-on-surface-variant font-label-sm text-label-sm tracking-wider uppercase">
+    <a class="hover:text-primary transition-colors" href="{% url 'home' %}">Home</a>
+    <span class="material-symbols-outlined text-[13px] text-outline-variant">chevron_right</span>
+    <span class="text-primary font-bold">Order History</span>
+  </nav>
+
+  <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-8">
+    <div class="max-w-2xl">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary-container/60 text-on-secondary-container mb-3">
+        <span class="material-symbols-outlined text-[16px] text-secondary">eco</span>
+        <span class="font-label-sm text-label-sm font-semibold tracking-wider uppercase">Order History</span>
       </div>
-      <span class="font-price-lg text-price-lg text-primary font-bold">${{ order.total_price }}</span>
+      <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight mb-2">Your Orders</h1>
+      <p class="font-body-lg text-body-lg text-on-surface-variant">Track and revisit every bouquet and product you've ordered from Bloom.</p>
+    </div>
+    <a class="px-6 py-2.5 rounded-full bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md transition-all shadow-md flex items-center gap-2" href="{% url 'bouquets:design_new' %}">
+      <span class="material-symbols-outlined text-lg">add_circle</span><span>New Custom Arrangement</span>
     </a>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+    <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
+      <span class="font-label-sm text-label-sm tracking-wider uppercase font-semibold text-on-surface-variant block mb-1.5">Total Orders</span>
+      <h3 class="font-price-lg text-price-lg text-primary">{{ counts.all }}</h3>
+    </div>
+    <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
+      <span class="font-label-sm text-label-sm tracking-wider uppercase font-semibold text-secondary block mb-1.5">In Progress</span>
+      <h3 class="font-price-lg text-price-lg text-primary">{{ counts.pending|add:counts.confirmed }}</h3>
+    </div>
+    <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
+      <span class="font-label-sm text-label-sm tracking-wider uppercase font-semibold text-on-surface-variant block mb-1.5">Delivered</span>
+      <h3 class="font-price-lg text-price-lg text-primary">{{ counts.delivered }}</h3>
+    </div>
+  </div>
+
+  <form method="get" class="bg-surface-container-lowest p-4 rounded-xl shadow-sm mb-8 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+    <div class="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
+      <a href="{% url 'orders:order_list' %}" class="px-4 py-2 rounded-full font-label-md text-label-md {% if not status_filter %}bg-primary text-on-primary shadow-sm{% else %}text-on-surface-variant hover:bg-surface-container-low{% endif %} flex items-center gap-2 flex-shrink-0 transition-colors">
+        <span>All</span><span class="px-2 py-0.5 rounded-full text-[11px] {% if not status_filter %}bg-primary-container text-primary-fixed{% else %}bg-surface-container{% endif %}">{{ counts.all }}</span>
+      </a>
+      <a href="?status=pending" class="px-4 py-2 rounded-full font-label-md text-label-md {% if status_filter == "pending" %}bg-primary text-on-primary shadow-sm{% else %}text-on-surface-variant hover:bg-surface-container-low{% endif %} flex items-center gap-2 flex-shrink-0 transition-colors">
+        <span>Pending</span><span class="px-2 py-0.5 rounded-full text-[11px] bg-surface-container">{{ counts.pending }}</span>
+      </a>
+      <a href="?status=confirmed" class="px-4 py-2 rounded-full font-label-md text-label-md {% if status_filter == "confirmed" %}bg-primary text-on-primary shadow-sm{% else %}text-on-surface-variant hover:bg-surface-container-low{% endif %} flex items-center gap-2 flex-shrink-0 transition-colors">
+        <span>Confirmed</span><span class="px-2 py-0.5 rounded-full text-[11px] bg-secondary-container text-on-secondary-container font-bold">{{ counts.confirmed }}</span>
+      </a>
+      <a href="?status=delivered" class="px-4 py-2 rounded-full font-label-md text-label-md {% if status_filter == "delivered" %}bg-primary text-on-primary shadow-sm{% else %}text-on-surface-variant hover:bg-surface-container-low{% endif %} flex items-center gap-2 flex-shrink-0 transition-colors">
+        <span>Delivered</span><span class="px-2 py-0.5 rounded-full text-[11px] bg-surface-container">{{ counts.delivered }}</span>
+      </a>
+      <a href="?status=cancelled" class="px-4 py-2 rounded-full font-label-md text-label-md {% if status_filter == "cancelled" %}bg-primary text-on-primary shadow-sm{% else %}text-on-surface-variant hover:bg-surface-container-low{% endif %} flex items-center gap-2 flex-shrink-0 transition-colors">
+        <span>Cancelled</span><span class="px-2 py-0.5 rounded-full text-[11px] bg-surface-container">{{ counts.cancelled }}</span>
+      </a>
+    </div>
+    <div class="relative flex-1 sm:w-72">
+      <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-outline text-lg">search</span>
+      <input type="text" name="q" value="{{ query }}" placeholder="Search order # or recipient..." class="w-full pl-10 pr-4 py-2 bg-surface-container-low rounded-full font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-secondary/30">
+    </div>
+  </form>
+
+  <div class="space-y-6">
+    {% for order in orders %}
+    <article class="bg-surface-container-lowest rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
+      <div class="bg-surface-container-low/50 px-6 lg:px-8 py-4 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex flex-wrap items-center gap-y-2 gap-x-6">
+          <div>
+            <span class="font-label-sm text-label-sm text-outline uppercase tracking-wider block">Order Reference</span>
+            <span class="font-title-sm text-title-sm text-primary font-bold">{{ order.order_number }}</span>
+          </div>
+          <div class="w-px h-7 bg-outline-variant/40 hidden sm:block"></div>
+          <div>
+            <span class="font-label-sm text-label-sm text-outline uppercase tracking-wider block">Placed On</span>
+            <span class="font-body-sm text-body-sm text-on-surface font-medium">{{ order.date|date:"M j, Y, g:i A" }}</span>
+          </div>
+          <div class="w-px h-7 bg-outline-variant/40 hidden sm:block"></div>
+          <div>
+            <span class="font-label-sm text-label-sm text-outline uppercase tracking-wider block">Recipient</span>
+            <span class="font-body-sm text-body-sm text-on-surface font-medium">{{ order.recipient_name }}</span>
+          </div>
+        </div>
+        <span class="px-4 py-1.5 rounded-full font-label-sm text-label-sm font-bold uppercase tracking-wider flex items-center gap-2
+          {% if order.status == "delivered" %}bg-surface-container text-secondary
+          {% elif order.status == "confirmed" %}bg-secondary-fixed/50 text-on-secondary-fixed
+          {% elif order.status == "cancelled" %}bg-error-container text-on-error-container
+          {% else %}bg-surface-container-high text-on-surface-variant{% endif %}">
+          {% if order.status == "delivered" %}<span class="material-symbols-outlined text-base">check_circle</span>{% endif %}
+          {{ order.get_status_display }}
+        </span>
+      </div>
+
+      <div class="p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div class="lg:col-span-7 space-y-4">
+          {% for oi in order.items.all %}
+          <div class="flex items-center justify-between gap-4 pb-3 border-b border-surface-container-low last:border-0 last:pb-0">
+            <div>
+              <p class="font-title-sm text-title-sm text-primary font-semibold">{{ oi.name_snapshot }}</p>
+              <p class="font-label-sm text-label-sm text-outline">Qty: {{ oi.quantity }} &middot; ${{ oi.unit_price }} each</p>
+            </div>
+            <span class="font-title-md text-title-md text-primary font-bold">${{ oi.subtotal }}</span>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="lg:col-span-5 bg-surface-container-low/40 rounded-xl p-6 flex flex-col justify-between gap-4">
+          <div>
+            <span class="font-label-sm text-label-sm text-outline uppercase tracking-wider block mb-1">Delivering to</span>
+            <p class="font-body-sm text-body-sm text-on-surface">{{ order.delivery_address }}{% if order.apartment %}, {{ order.apartment }}{% endif %}<br>{{ order.city }} {{ order.postal_code }}</p>
+          </div>
+          <div class="space-y-1 pt-2">
+            <div class="flex justify-between font-body-sm text-body-sm text-on-surface-variant"><span>Subtotal</span><span>${{ order.subtotal }}</span></div>
+            <div class="flex justify-between font-title-sm text-title-sm text-primary font-bold pt-1"><span>Total Paid</span><span>${{ order.total_price }}</span></div>
+            <p class="font-label-sm text-label-sm text-outline">{{ order.payment.get_method_display }} &middot; {{ order.payment.get_status_display }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-surface-container-low/30 px-6 lg:px-8 py-4 flex flex-wrap items-center justify-end gap-3">
+        <a href="{% url 'orders:order_detail' order_number=order.order_number %}" class="px-4 py-2 rounded-full bg-surface-container-lowest hover:bg-surface-container text-primary font-label-md text-label-md font-semibold transition-colors">
+          View Full Details
+        </a>
+        <form method="post" action="{% url 'orders:reorder' order_number=order.order_number %}">
+          {% csrf_token %}
+          <button type="submit" class="px-5 py-2 rounded-full bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md transition-all shadow-sm flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-base">cached</span>Reorder (${{ order.total_price }})
+          </button>
+        </form>
+      </div>
+    </article>
     {% empty %}
-    <p class="text-on-surface-variant">You haven't placed any orders yet.</p>
+    <div class="bg-surface-container-lowest rounded-xl p-space-xl shadow-sm text-center">
+      <p class="font-body-lg text-body-lg text-on-surface-variant mb-4">You haven't placed any orders yet.</p>
+      <a href="{% url 'catalog:item_list' %}" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-on-primary font-title-sm text-title-sm hover:bg-primary-container transition-all">
+        <span class="material-symbols-outlined text-base">storefront</span>Start Shopping
+      </a>
+    </div>
     {% endfor %}
   </div>
 </div>

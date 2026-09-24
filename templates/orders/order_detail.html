@@ -1,2 +1,173 @@
-{# templates/orders/order_detail.html #}
-{% extends "orders/order_confirmation.html" %}
+{% extends "base.html" %}
+{% block content %}
+
+<div class="w-full bg-surface-container-low/70 backdrop-blur-md">
+  <div class="max-w-[1320px] mx-auto px-margin-mobile lg:px-margin py-3 flex flex-wrap items-center justify-between gap-4">
+    <a class="inline-flex items-center gap-1.5 text-secondary hover:text-primary font-body-sm text-body-sm transition-colors" href="{% url 'orders:order_list' %}">
+      <span class="material-symbols-outlined text-base">arrow_back</span><span>Return to All Orders</span>
+    </a>
+    <button type="button" onclick="window.print()" class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-surface-container hover:bg-surface-container-high text-primary font-label-md text-label-md transition-all shadow-sm">
+      <span class="material-symbols-outlined text-sm">print</span><span>Print Invoice</span>
+    </button>
+  </div>
+</div>
+
+<div class="max-w-[1320px] mx-auto w-full px-margin-mobile lg:px-margin py-space-lg">
+  <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-space-lg">
+    <div class="space-y-1">
+      <span class="font-label-sm text-label-sm tracking-widest uppercase text-secondary font-semibold">{{ order.get_status_display }}</span>
+      <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">Order {{ order.order_number }}</h1>
+      <p class="font-body-md text-body-md text-on-surface-variant flex items-center gap-2">
+        <span class="material-symbols-outlined text-sm text-secondary">schedule</span>
+        Placed on {{ order.date|date:"l, F j, Y" }} at {{ order.date|date:"g:i A" }}
+      </p>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="px-3.5 py-1.5 rounded-full bg-secondary-container text-on-secondary-container font-label-md text-label-md font-semibold flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-sm">{% if order.payment.status == "paid" %}lock{% else %}schedule{% endif %}</span>
+        {{ order.payment.get_status_display }}
+      </span>
+      <span class="px-3.5 py-1.5 rounded-full bg-surface-container text-primary font-label-md text-label-md font-semibold">{{ order.get_status_display }}</span>
+    </div>
+  </div>
+
+  <!-- Simple status progress track -->
+  <div class="bg-surface-container-lowest rounded-xl p-space-md lg:p-space-lg shadow-sm mb-space-lg">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {% with steps="pending,confirmed,delivered" %}
+      {% for step in steps|make_list %}{% endfor %}
+      {% endwith %}
+      <div class="flex md:flex-col items-center md:items-start gap-3.5">
+        <div class="w-10 h-10 rounded-full {% if order.status != 'cancelled' %}bg-primary text-on-primary{% else %}bg-surface-container text-outline{% endif %} flex items-center justify-center shadow-sm flex-shrink-0">
+          <span class="material-symbols-outlined text-lg">check</span>
+        </div>
+        <div>
+          <div class="font-title-sm text-title-sm text-primary font-semibold">1. Order Placed</div>
+          <div class="font-body-sm text-body-sm text-on-surface-variant">{{ order.date|date:"M j, g:i A" }}</div>
+        </div>
+      </div>
+      <div class="flex md:flex-col items-center md:items-start gap-3.5">
+        <div class="w-10 h-10 rounded-full {% if order.status == 'confirmed' or order.status == 'delivered' %}bg-primary text-on-primary{% else %}bg-surface-container-high text-outline{% endif %} flex items-center justify-center shadow-sm flex-shrink-0">
+          <span class="material-symbols-outlined text-lg">{% if order.status == 'confirmed' or order.status == 'delivered' %}check{% else %}hourglass_empty{% endif %}</span>
+        </div>
+        <div>
+          <div class="font-title-sm text-title-sm text-primary font-semibold">2. Confirmed</div>
+          <div class="font-body-sm text-body-sm text-on-surface-variant">Preparing your order</div>
+        </div>
+      </div>
+      <div class="flex md:flex-col items-center md:items-start gap-3.5">
+        <div class="w-10 h-10 rounded-full {% if order.status == 'delivered' %}bg-primary text-on-primary{% else %}bg-surface-container-high text-outline{% endif %} flex items-center justify-center shadow-sm flex-shrink-0">
+          <span class="material-symbols-outlined text-lg">{% if order.status == 'delivered' %}check{% else %}flag{% endif %}</span>
+        </div>
+        <div>
+          <div class="font-title-sm text-title-sm text-primary font-semibold">3. Delivered</div>
+          <div class="font-body-sm text-body-sm text-on-surface-variant">
+            {% if order.status == 'delivered' %}Completed{% elif order.status == 'cancelled' %}Order cancelled{% else %}Pending{% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+    <div class="lg:col-span-8 space-y-space-lg">
+      <div class="rounded-xl bg-surface-container-lowest p-space-md lg:p-space-lg shadow-sm space-y-space-md">
+        <div class="flex items-center justify-between pb-space-sm">
+          <div>
+            <span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-bold">Your Order</span>
+            <h2 class="font-headline-sm text-headline-sm text-primary font-semibold">Items</h2>
+          </div>
+          <span class="font-label-sm text-label-sm bg-surface-container px-3 py-1 rounded-full text-primary font-semibold">{{ order.items.count }} item{{ order.items.count|pluralize }}</span>
+        </div>
+
+        {% for oi in order.items.all %}
+        <div class="p-space-md rounded-xl bg-surface-container-low/60 flex flex-col sm:flex-row gap-space-md">
+          <div class="w-full sm:w-32 h-32 rounded-lg overflow-hidden bg-surface-container flex-shrink-0 flex items-center justify-center">
+            {% if oi.item and oi.item.image %}
+            <img class="w-full h-full object-cover" src="{{ oi.item.image.url }}" alt="{{ oi.name_snapshot }}">
+            {% else %}
+            <span class="material-symbols-outlined text-4xl text-outline">local_florist</span>
+            {% endif %}
+          </div>
+          <div class="flex-1 flex flex-col justify-between space-y-2">
+            <div>
+              <div class="flex items-start justify-between gap-2">
+                <h3 class="font-title-md text-title-md text-primary font-semibold">{{ oi.name_snapshot }}</h3>
+                <span class="font-title-md text-title-md text-primary font-bold">${{ oi.subtotal }}</span>
+              </div>
+              <p class="font-label-sm text-label-sm text-outline">Qty: {{ oi.quantity }} &middot; ${{ oi.unit_price }} each</p>
+              {% if oi.bouquet %}
+              <div class="mt-2 flex flex-wrap gap-1.5">
+                {% for bi in oi.bouquet.items.all %}
+                <span class="px-2.5 py-1 rounded-full bg-surface-container text-primary font-label-sm text-label-sm">{{ bi.quantity }}&times; {{ bi.item.name }}</span>
+                {% endfor %}
+              </div>
+              {% if oi.bouquet.card_message %}
+              <p class="font-body-sm text-body-sm text-on-surface-variant italic mt-2">&ldquo;{{ oi.bouquet.card_message }}&rdquo;</p>
+              {% endif %}
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="lg:col-span-4 space-y-space-md lg:sticky lg:top-24">
+      <div class="rounded-xl bg-surface-container-lowest p-space-md shadow-sm space-y-space-md">
+        <div class="flex items-center gap-2 pb-space-xs">
+          <span class="material-symbols-outlined text-secondary text-lg">local_florist</span>
+          <h2 class="font-title-md text-title-md text-primary font-semibold">Delivery Details</h2>
+        </div>
+        <div class="space-y-3 font-body-sm text-body-sm">
+          <div>
+            <div class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Recipient</div>
+            <div class="font-title-sm text-title-sm text-primary font-semibold">{{ order.recipient_name }}</div>
+          </div>
+          <div>
+            <div class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Address</div>
+            <div class="text-on-surface leading-snug">{{ order.delivery_address }}{% if order.apartment %}, {{ order.apartment }}{% endif %}<br>{{ order.city }} {{ order.postal_code }}</div>
+          </div>
+          <div>
+            <div class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Contact Phone</div>
+            <div class="text-primary font-medium">{{ order.phone }}</div>
+          </div>
+          {% if order.delivery_instructions %}
+          <div class="p-2.5 rounded-lg bg-surface-container-low flex items-start gap-2 text-on-surface-variant">
+            <span class="material-symbols-outlined text-sm text-secondary flex-shrink-0 mt-0.5">door_front</span>
+            <span class="font-body-sm text-body-sm leading-tight">{{ order.delivery_instructions }}</span>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="rounded-xl bg-surface-container-lowest p-space-md shadow-sm space-y-space-md">
+        <div class="flex items-center justify-between pb-space-xs">
+          <h2 class="font-title-md text-title-md text-primary font-semibold">Order Accounting</h2>
+          <span class="font-label-sm text-label-sm text-secondary bg-surface-container px-2 py-0.5 rounded-full">USD</span>
+        </div>
+        <div class="space-y-2.5 font-body-sm text-body-sm text-on-surface-variant">
+          <div class="flex justify-between"><span>Subtotal</span><span class="text-primary font-medium">${{ order.subtotal }}</span></div>
+          <div class="flex justify-between">
+            <span>Delivery Fee</span>
+            {% if order.delivery_fee == 0 %}<span class="text-secondary font-medium">Free</span>{% else %}<span class="text-primary font-medium">${{ order.delivery_fee }}</span>{% endif %}
+          </div>
+          <div class="pt-2 flex justify-between items-baseline text-primary">
+            <div>
+              <div class="font-title-md text-title-md font-bold">Total Paid</div>
+              <div class="font-label-sm text-label-sm text-outline">{{ order.payment.get_method_display }}</div>
+            </div>
+            <div class="font-price-lg text-price-lg font-bold text-primary">${{ order.total_price }}</div>
+          </div>
+        </div>
+        <form method="post" action="{% url 'orders:reorder' order_number=order.order_number %}" class="pt-space-sm">
+          {% csrf_token %}
+          <button type="submit" class="w-full py-2.5 px-4 rounded-full bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md transition-all shadow-sm flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-sm">autorenew</span><span>Reorder This</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

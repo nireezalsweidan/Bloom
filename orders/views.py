@@ -8,6 +8,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from cart.models import Cart, CartItem
 from payments.models import Payment
 from .models import Order, OrderItem
+from django.db.models import Q
+from bouquets.models import Bouquet, BouquetItem
 
 DELIVERY_FEE = Decimal("12.00")
 FREE_DELIVERY_THRESHOLD = Decimal("75.00")
@@ -87,10 +89,72 @@ def order_confirmation(request, order_number):
 
 @login_required
 def order_list(request):
-    return render(request, "orders/order_list.html", {"orders": request.user.orders.all()})
+    status_filter = request.GET.get("status", "")
+    query = request.GET.get("q", "").strip()
 
+    orders = request.user.orders.all().prefetch_related("items", "payment")
+    if status_filter:
+        orders = orders.filter(status=status_filter)
+    if query:
+        orders = orders.filter(Q(order_number__icontains=query) | Q(recipient_name__icontains=query))
+
+    counts = {
+        "all": request.user.orders.count(),
+        "pending": request.user.orders.filter(status=Order.Status.PENDING).count(),
+        "confirmed": request.user.orders.filter(status=Order.Status.CONFIRMED).count(),
+        "delivered": request.user.orders.filter(status=Order.Status.DELIVERED).count(),
+        "cancelled": request.user.orders.filter(status=Order.Status.CANCELLED).count(),
+    }
+
+    return render(request, "orders/order_list.html", {
+        "orders": orders, "counts": counts, "status_filter": status_filter, "query": query,
+    })
 
 @login_required
 def order_detail(request, order_number):
     order = get_object_or_404(Order, order_number=order_number, user=request.user)
     return render(request, "orders/order_detail.html", {"order": order})
+
+
+@login_required
+def reorder(request, order_number):
+    order = get_object_or_404(Order, order_number=order_number, user=request.user)
+    if request.method != "POST":
+        return redirect("orders:order_detail", order_number=order.order_number)
+
+    cart, _ = Cart.objects.get_or_create(user=request.user)
+    if cart.status != Cart.Status.ACTIVE:
+        cart.status = Cart.Status.ACTIVE
+        cart.save()
+
+    added, skipped = 0, 0
+    for oi in order.items.all():
+        if oi.item and oi.item.is_available:
+            cart_item, created = CartItem.objects.get_or_create(
+                cart=cart, item=oi.item, defaults={"quantity": oi.quantity, "unit_price": oi.item.price}
+            )
+            if not created:
+                cart_item.quantity += oi.quantity
+                cart_item.save()
+            added += 1
+        elif oi.bouquet:
+            clone = Bouquet.objects.create(
+                user=request.user, occasion=oi.bouquet.occasion, style=oi.bouquet.style,
+                budget=oi.bouquet.budget, greeting_card=oi.bouquet.greeting_card,
+                card_message=oi.bouquet.card_message, status=Bouquet.Status.SAVED,
+                source=oi.bouquet.source,
+            )
+            for bi in oi.bouquet.items.all():
+                BouquetItem.objects.create(bouquet=clone, item=bi.item, quantity=bi.quantity, unit_price=bi.item.price)
+            clone.recalculate_price()
+            clone.save()
+            CartItem.objects.create(cart=cart, bouquet=clone, quantity=oi.quantity, unit_price=clone.price)
+            added += 1
+        else:
+            skipped += 1
+
+    if added:
+        messages.success(request, f"Added {added} item(s) back to your cart.")
+    if skipped:
+        messages.warning(request, f"{skipped} item(s) from this order are no longer available and were skipped.")
+    return redirect("cart:cart_detail")

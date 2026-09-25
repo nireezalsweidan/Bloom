@@ -10,6 +10,8 @@ from payments.models import Payment
 from .models import Order, OrderItem
 from django.db.models import Q
 from bouquets.models import Bouquet, BouquetItem
+import re
+from datetime import date
 
 DELIVERY_FEE = Decimal("12.00")
 FREE_DELIVERY_THRESHOLD = Decimal("75.00")
@@ -158,3 +160,93 @@ def reorder(request, order_number):
     if skipped:
         messages.warning(request, f"{skipped} item(s) from this order are no longer available and were skipped.")
     return redirect("cart:cart_detail")
+
+@login_required
+def checkout(request):
+    cart = Cart.objects.filter(user=request.user, status=Cart.Status.ACTIVE).first()
+    cart_items = cart.cart_items.select_related("item", "bouquet") if cart else []
+
+    if not cart_items:
+        messages.warning(request, "Your cart is empty.")
+        return redirect("cart:cart_detail")
+
+    subtotal = sum((ci.subtotal for ci in cart_items), Decimal("0.00"))
+    delivery_fee = Decimal("0.00") if subtotal >= FREE_DELIVERY_THRESHOLD else DELIVERY_FEE
+    total = subtotal + delivery_fee
+    context = {"cart_items": cart_items, "subtotal": subtotal, "delivery_fee": delivery_fee, "total": total}
+
+    if request.method == "POST":
+        recipient_name = request.POST.get("recipient_name", "").strip()
+        phone = request.POST.get("phone", "").strip()
+        address = request.POST.get("address", "").strip()
+        apartment = request.POST.get("apartment", "").strip()
+        city = request.POST.get("city", "").strip()
+        postal_code = request.POST.get("postal_code", "").strip()
+        instructions = request.POST.get("instructions", "").strip()
+        payment_method = request.POST.get("payment_method", "cash")
+
+        errors = []
+        if not all([recipient_name, phone, address, city, postal_code]):
+            errors.append("Please fill in all required delivery fields.")
+
+        card_last4 = ""
+        cardholder_name = ""
+
+        if payment_method == "card":
+            card_number = re.sub(r"\s+", "", request.POST.get("card_number", ""))
+            expiry = request.POST.get("card_expiry", "").strip()
+            cvc = request.POST.get("card_cvc", "").strip()
+            cardholder_name = request.POST.get("card_name", "").strip()
+
+            if not (card_number.isdigit() and 13 <= len(card_number) <= 19):
+                errors.append("Please enter a valid card number.")
+            else:
+                card_last4 = card_number[-4:]
+
+            if not re.match(r"^(0[1-9]|1[0-2])/\d{2}$", expiry):
+                errors.append("Expiration date must be in MM/YY format.")
+            else:
+                exp_month, exp_year = expiry.split("/")
+                today = date.today()
+                if (2000 + int(exp_year), int(exp_month)) < (today.year, today.month):
+                    errors.append("This card has expired.")
+
+            if not (cvc.isdigit() and 3 <= len(cvc) <= 4):
+                errors.append("Please enter a valid security code (CVC).")
+            if not cardholder_name:
+                errors.append("Please enter the name on the card.")
+
+        if errors:
+            for e in errors:
+                messages.error(request, e)
+            return render(request, "orders/checkout.html", context)
+
+        with transaction.atomic():
+            order = Order.objects.create(
+                user=request.user, recipient_name=recipient_name, phone=phone,
+                delivery_address=address, apartment=apartment, city=city, postal_code=postal_code,
+                delivery_instructions=instructions, subtotal=subtotal, delivery_fee=delivery_fee,
+                total_price=total, status=Order.Status.CONFIRMED,
+            )
+            for ci in cart_items:
+                OrderItem.objects.create(
+                    order=order, item=ci.item, bouquet=ci.bouquet,
+                    name_snapshot=ci.name, quantity=ci.quantity, unit_price=ci.unit_price,
+                )
+                if ci.bouquet:
+                    ci.bouquet.status = ci.bouquet.Status.ORDERED
+                    ci.bouquet.save()
+
+            Payment.objects.create(
+                order=order, method=payment_method, amount=total,
+                status=Payment.Status.PENDING if payment_method == "cash" else Payment.Status.PAID,
+                card_last4=card_last4, cardholder_name=cardholder_name,
+            )
+
+            cart.status = Cart.Status.ORDERED
+            cart.save()
+            CartItem.objects.filter(cart=cart).delete()
+
+        return redirect("orders:order_confirmation", order_number=order.order_number)
+
+    return render(request, "orders/checkout.html", context)

@@ -56,6 +56,31 @@
               <span class="font-title-sm text-title-sm font-semibold">Cash on Delivery</span>
             </div>
           </label>
+          <div id="card-fields" class="hidden flex-col gap-4 bg-surface-container-low/40 p-5 rounded-xl">
+            <div class="flex flex-col gap-1.5">
+              <label class="font-label-md text-label-md text-primary font-semibold">Card Number *</label>
+              <input type="text" name="card_number" inputmode="numeric" maxlength="19" placeholder="1234 5678 9012 3456"
+                class="w-full px-4 py-3 rounded-lg bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-secondary tracking-widest">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="flex flex-col gap-1.5">
+                <label class="font-label-md text-label-md text-primary font-semibold">Expiration (MM/YY) *</label>
+                <input type="text" name="card_expiry" placeholder="MM/YY" maxlength="5"
+                  class="w-full px-4 py-3 rounded-lg bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-secondary">
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label class="font-label-md text-label-md text-primary font-semibold">CVC *</label>
+                <input type="password" name="card_cvc" maxlength="4" placeholder="123"
+                  class="w-full px-4 py-3 rounded-lg bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-secondary">
+              </div>
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label class="font-label-md text-label-md text-primary font-semibold">Name on Card *</label>
+              <input type="text" name="card_name" placeholder="Cardholder name"
+                class="w-full px-4 py-3 rounded-lg bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-secondary uppercase tracking-wider">
+            </div>
+            <p class="font-label-sm text-label-sm text-outline">Demo checkout — no real charge is made, and full card numbers are never stored.</p>
+          </div>
           <label class="cursor-pointer">
             <input type="radio" name="payment_method" value="card" class="hidden peer">
             <div class="p-4 rounded-xl bg-surface-container-low peer-checked:bg-primary peer-checked:text-on-primary text-center flex flex-col items-center gap-2 transition-all">
@@ -100,4 +125,13 @@
     </aside>
   </form>
 </div>
+<script>
+function updatePaymentFields() {
+  const selected = document.querySelector('input[name=payment_method]:checked').value;
+  const cardFields = document.getElementById('card-fields');
+  cardFields.style.display = selected === 'card' ? 'flex' : 'none';
+}
+document.querySelectorAll('input[name=payment_method]').forEach(r => r.addEventListener('change', updatePaymentFields));
+document.addEventListener('DOMContentLoaded', updatePaymentFields);
+</script>
 {% endblock %}

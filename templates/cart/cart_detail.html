@@ -58,12 +58,12 @@
               </button>
             </form>
             <div class="flex items-center bg-surface-container-low rounded-full p-1 shadow-inner">
-              <form method="post" action="{% url 'cart:update_quantity' pk=ci.pk %}">
+              <form method="post" action="{% url 'cart:update_quantity' pk=ci.pk %}" class="flex">
                 {% csrf_token %}<input type="hidden" name="action" value="decrease">
                 <button type="submit" class="w-7 h-7 rounded-full bg-surface-container-lowest text-primary hover:bg-surface-container flex items-center justify-center font-bold text-sm shadow-sm">&minus;</button>
               </form>
               <span class="w-8 text-center font-title-sm text-title-sm text-primary font-semibold">{{ ci.quantity }}</span>
-              <form method="post" action="{% url 'cart:update_quantity' pk=ci.pk %}">
+              <form method="post" action="{% url 'cart:update_quantity' pk=ci.pk %}" class="flex">
                 {% csrf_token %}<input type="hidden" name="action" value="increase">
                 <button type="submit" class="w-7 h-7 rounded-full bg-surface-container-lowest text-primary hover:bg-surface-container flex items-center justify-center font-bold text-sm shadow-sm">+</button>
               </form>

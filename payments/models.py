@@ -16,6 +16,8 @@ class Payment(models.Model):
     method = models.CharField(max_length=10, choices=Method.choices)
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
     amount = models.DecimalField(max_digits=9, decimal_places=2)
+    card_last4 = models.CharField(max_length=4, blank=True)
+    cardholder_name = models.CharField(max_length=150, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

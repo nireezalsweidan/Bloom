@@ -8,6 +8,8 @@ from .models import Cart, CartItem
 from decimal import Decimal
 from orders.views import FREE_DELIVERY_THRESHOLD
 
+from django.http import JsonResponse
+
 
 def _get_or_create_cart(user):
     cart, created = Cart.objects.get_or_create(user=user)
@@ -87,4 +89,56 @@ def remove_item(request, pk):
     if request.method == "POST":
         cart_item.delete()
         messages.info(request, "Item removed from cart.")
+    return redirect("cart:cart_detail")
+
+@login_required
+def add_item(request, item_id):
+    item = get_object_or_404(Item, id=item_id, is_available=True)
+    if request.method != "POST":
+        return redirect("catalog:item_detail", slug=item.slug)
+
+    qty = max(1, int(request.POST.get("quantity", 1) or 1))
+    cart = _get_or_create_cart(request.user)
+    cart_item, created = CartItem.objects.get_or_create(
+        cart=cart, item=item, defaults={"quantity": qty, "unit_price": item.price}
+    )
+    if not created:
+        cart_item.quantity += qty
+        cart_item.save()
+
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return JsonResponse({
+            "success": True,
+            "message": f"Added {qty} x {item.name} to your cart.",
+            "cart_count": cart.total_quantity,
+            "cart_total": str(cart.total_price),
+        })
+
+    messages.success(request, f"Added {item.name} to your cart.")
+    return redirect("cart:cart_detail")
+
+
+@login_required
+def add_bouquet(request, bouquet_id):
+    bouquet = get_object_or_404(Bouquet, id=bouquet_id, user=request.user)
+    if request.method != "POST":
+        return redirect("bouquets:bouquet_detail", pk=bouquet.pk)
+
+    cart = _get_or_create_cart(request.user)
+    existing = CartItem.objects.filter(cart=cart, bouquet=bouquet).first()
+    if existing:
+        existing.quantity += 1
+        existing.save()
+    else:
+        CartItem.objects.create(cart=cart, bouquet=bouquet, quantity=1, unit_price=bouquet.price)
+
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return JsonResponse({
+            "success": True,
+            "message": "Bouquet added to your cart.",
+            "cart_count": cart.total_quantity,
+            "cart_total": str(cart.total_price),
+        })
+
+    messages.success(request, "Bouquet added to your cart.")
     return redirect("cart:cart_detail")

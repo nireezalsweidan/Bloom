@@ -162,16 +162,20 @@
                 <span class="font-price-lg text-price-lg text-primary font-bold">${{ item.price }}</span>
               </div>
               <div class="flex items-center gap-2">
-                <form method="post" action="{% url 'cart:add_item' item_id=item.id %}">
-                  {% csrf_token %}
-                  <button type="submit" {% if not item.in_stock %}disabled{% endif %} aria-label="Add {{ item.name }} to cart"
-                    class="w-9 h-9 rounded-full bg-primary text-on-primary hover:bg-primary-container flex items-center justify-center transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                <div class="flex items-center gap-2">
+                  <div class="qty-stepper flex items-center bg-surface-container-low rounded-full p-1">
+                    <button type="button" class="grid-qty-decrease w-6 h-6 rounded-full bg-surface-container-lowest text-primary hover:bg-surface-container flex items-center justify-center text-xs font-bold">&minus;</button>
+                    <span class="grid-qty w-6 text-center font-label-sm text-label-sm text-primary font-semibold">1</span>
+                    <button type="button" class="grid-qty-increase w-6 h-6 rounded-full bg-surface-container-lowest text-primary hover:bg-surface-container flex items-center justify-center text-xs font-bold">+</button>
+                  </div>
+                  <button type="button" {% if not item.in_stock %}disabled{% endif %} data-item-id="{{ item.id }}" data-item-name="{{ item.name }}" aria-label="Add {{ item.name }} to cart"
+                    class="add-to-cart-btn w-9 h-9 rounded-full bg-primary text-on-primary hover:bg-primary-container flex items-center justify-center transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
                     <span class="material-symbols-outlined text-sm">add_shopping_cart</span>
                   </button>
-                </form>
-                <a href="{% url 'catalog:item_detail' slug=item.slug %}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surface-container text-primary font-label-md text-label-md hover:bg-surface-container-high transition-transform active:scale-95 shadow-sm">
-                  <span class="material-symbols-outlined text-sm">visibility</span><span>View</span>
-                </a>
+                  <a href="{% url 'catalog:item_detail' slug=item.slug %}" class="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-surface-container text-primary font-label-md text-label-md hover:bg-surface-container-high transition-transform active:scale-95 shadow-sm">
+                    <span class="material-symbols-outlined text-sm">visibility</span>
+                  </a>
+                </div>
               </div>
             </div>
           </div>
@@ -202,4 +206,27 @@
   </div>
 </form>
 </div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+document.addEventListener('click', (e) => {
+  if (e.target.closest('.grid-qty-decrease')) {
+    const qtyEl = e.target.closest('.qty-stepper').querySelector('.grid-qty');
+    qtyEl.textContent = Math.max(1, parseInt(qtyEl.textContent) - 1);
+  }
+  if (e.target.closest('.grid-qty-increase')) {
+    const qtyEl = e.target.closest('.qty-stepper').querySelector('.grid-qty');
+    qtyEl.textContent = parseInt(qtyEl.textContent) + 1;
+  }
+  const addBtn = e.target.closest('.add-to-cart-btn');
+  if (addBtn) {
+    const itemId = addBtn.dataset.itemId;
+    const card = addBtn.closest('.flex.flex-col');
+    const qtyEl = card ? card.querySelector('.grid-qty') : null;
+    const qty = qtyEl ? qtyEl.textContent.trim() : 1;
+    addItemToCart(itemId, qty);
+  }
+});
+</script>
+
 {% endblock %}

@@ -105,6 +105,14 @@
               <span class="font-label-sm text-label-sm font-semibold uppercase tracking-wider">Recommendation Ready</span>
             </div>
           </div>
+          {% if latest_recommendation.generated_image %}
+          <div class="rounded-xl overflow-hidden bg-surface-container-low">
+            <img src="{{ latest_recommendation.generated_image.url }}" alt="Illustrative preview of your bouquet" class="w-full aspect-square object-cover">
+          </div>
+          <p class="font-label-sm text-label-sm text-outline text-center -mt-2">
+            This is an illustrative preview — the real bouquet may look a bit different.
+          </p>
+          {% endif %}
 
           <div>
             <span class="font-label-sm text-label-sm text-secondary uppercase tracking-widest font-semibold">AI Curated Composition</span>

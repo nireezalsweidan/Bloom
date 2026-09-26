@@ -9,6 +9,8 @@ from catalog.models import Item
 from .models import AIRecommendation
 from .services import generate_recommendation, validate_recommendation, AIGenerationError
 
+from .image_service import generate_bouquet_image, save_recommendation_image
+
 COLOR_PALETTE_CHOICES = [
     "Soft Pastels & Blush Rose", "Sunset Terracotta & Warm Peach",
     "Pure Ivory & Botanical Sage", "Vibrant Jewel & Plum Velour",
@@ -54,9 +56,15 @@ def ai_designer(request):
 
         try:
             raw = generate_recommendation(occasion, style, budget, color_palette, card_message_pref)
+            recommendation.output_data = raw  # save immediately so failures are debuggable in admin
+            recommendation.save()
             cleaned, warnings = validate_recommendation(raw, budget)
             recommendation.output_data = cleaned
             recommendation.save()
+
+            image_bytes = generate_bouquet_image(occasion, style, color_palette, cleaned["flowers"])
+            save_recommendation_image(recommendation, image_bytes)
+
             for w in warnings:
                 messages.warning(request, w)
         except AIGenerationError as exc:

@@ -49,8 +49,11 @@ INSTALLED_APPS = [
 
 AUTH_USER_MODEL = "accounts.User"
 
-AI_PROVIDER = os.environ.get("AI_PROVIDER", "mock")  # "mock" (default, no key needed) or "anthropic"
-ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+AI_PROVIDER = os.environ.get("AI_PROVIDER", "mock")  # "mock", "gemini", or "anthropic"
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+
+AI_IMAGE_PROVIDER = os.environ.get("AI_IMAGE_PROVIDER", "mock")  # "mock", "gemini", or "openai"
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
 
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "home"

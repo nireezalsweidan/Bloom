@@ -20,6 +20,7 @@ class AIRecommendation(models.Model):
     error_message = models.TextField(blank=True)
 
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.GENERATED)
+    generated_image = models.ImageField(upload_to="ai_recommendations/", blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

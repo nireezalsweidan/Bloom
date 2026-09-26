@@ -30,7 +30,7 @@ def _catalog_context(max_items=60):
 
 def _build_prompt(occasion, style, budget, color_palette, card_tone):
     catalog = _catalog_context()
-    return f"""You are Bloom's floral design assistant. Recommend a bouquet using ONLY the catalog items below (reference them by their exact "id"). Stay within the customer's budget where possible — do not exceed it by more than 10%.
+    return f"""You are Bloom's floral design assistant. Recommend a bouquet using ONLY the catalog items below (reference them by their exact "id"). Stay within the customer's budget where possible — do not exceed it by more than 10%. Respond with ONLY valid JSON, no other text, no markdown code fences, and no wrapper object — the JSON itself must be exactly this shape at the top level:
 
 Customer preferences:
 - Occasion: {occasion}
@@ -50,6 +50,18 @@ Respond with ONLY valid JSON, no other text, matching exactly this shape:
   "style_reasoning": "<1-2 sentence explanation of the composition>"
 }}"""
 
+def _call_gemini(prompt):
+    from google import genai
+
+    client = genai.Client(api_key=settings.GEMINI_API_KEY)
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
+        )
+    except Exception as exc:
+        raise AIGenerationError(f"AI provider request failed: {exc}") from exc
+    return response.text
 
 def _call_anthropic(prompt):
     import anthropic
@@ -98,11 +110,12 @@ def _call_mock(occasion, style, budget, color_palette, card_tone):
 
 
 def generate_recommendation(occasion, style, budget, color_palette, card_tone):
-    """Returns a dict of raw AI output. Raises AIGenerationError on failure."""
     prompt = _build_prompt(occasion, style, budget, color_palette, card_tone)
 
     try:
-        if settings.AI_PROVIDER == "anthropic":
+        if settings.AI_PROVIDER == "gemini":
+            raw_text = _call_gemini(prompt)
+        elif settings.AI_PROVIDER == "anthropic":
             raw_text = _call_anthropic(prompt)
         else:
             raw_text = _call_mock(occasion, style, budget, color_palette, card_tone)
@@ -110,6 +123,11 @@ def generate_recommendation(occasion, style, budget, color_palette, card_tone):
         raise
     except Exception as exc:
         raise AIGenerationError(f"Unexpected AI provider error: {exc}") from exc
+
+    print("=" * 40)
+    print("RAW AI RESPONSE:")
+    print(raw_text)
+    print("=" * 40)
 
     try:
         cleaned = raw_text.strip()
@@ -121,12 +139,21 @@ def generate_recommendation(occasion, style, budget, color_palette, card_tone):
     except (json.JSONDecodeError, IndexError) as exc:
         raise AIGenerationError(f"AI returned malformed JSON: {exc}") from exc
 
-
 def validate_recommendation(data, budget):
     """
     Validates AI output against the real catalog. Returns (cleaned_data,
     warnings) or raises AIGenerationError if nothing usable survives.
     """
+    # Some models nest the real payload under a wrapper key or a
+    # single-element list — unwrap common shapes before validating.
+    if isinstance(data, list) and len(data) == 1 and isinstance(data[0], dict):
+        data = data[0]
+    if isinstance(data, dict) and "flowers" not in data:
+        for wrapper_key in ("bouquet", "recommendation", "result", "data", "response"):
+            if wrapper_key in data and isinstance(data[wrapper_key], dict) and "flowers" in data[wrapper_key]:
+                data = data[wrapper_key]
+                break
+
     if not isinstance(data, dict) or "flowers" not in data:
         raise AIGenerationError("AI response missing required 'flowers' field.")
 

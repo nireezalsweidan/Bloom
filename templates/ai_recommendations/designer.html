@@ -106,11 +106,11 @@
             </div>
           </div>
           {% if latest_recommendation.generated_image %}
-          <div class="rounded-xl overflow-hidden bg-surface-container-low">
-            <img src="{{ latest_recommendation.generated_image.url }}" alt="Illustrative preview of your bouquet" class="w-full aspect-square object-cover">
+          <div class="rounded-xl overflow-hidden bg-surface-container-low flex items-center justify-center max-h-[420px]">
+            <img src="{{ latest_recommendation.generated_image.url }}" alt="Illustrative preview of your bouquet" class="w-full max-h-[420px] object-contain">
           </div>
           <p class="font-label-sm text-label-sm text-outline text-center -mt-2">
-            This is an illustrative preview — the real bouquet may look a bit different.
+            This is a stylized illustration to give you a general sense of the shape and colors — not a photo of the actual flowers you'll receive.
           </p>
           {% endif %}
 

@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.db import models
-
+from bouquets.models import Bouquet
 
 class AIRecommendation(models.Model):
     class Status(models.TextChoices):
@@ -11,8 +11,9 @@ class AIRecommendation(models.Model):
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="ai_recommendations")
 
-    occasion = models.CharField(max_length=20)
-    style = models.CharField(max_length=20)
+    occasion = models.CharField(max_length=20, choices=Bouquet.Occasion.choices)
+    style = models.CharField(max_length=20, choices=Bouquet.Style.choices)
+
     budget = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
 
     input_data = models.JSONField()

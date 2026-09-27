@@ -86,11 +86,11 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
             {% for entry in flowers_with_qty %}
             <div class="flower-row bg-surface-container-low/40 rounded-xl p-space-sm flex flex-col gap-2" data-price="{{ entry.item.price }}" data-name="{{ entry.item.name }}">
-              <div class="w-full h-32 rounded-lg overflow-hidden bg-surface-container-low">
+              <div class="w-full aspect-[4/3] rounded-lg overflow-hidden bg-surface-container-low">
                 {% if entry.item.image %}
-                <img src="{{ entry.item.image.url }}" alt="{{ entry.item.name }}" class="w-full h-full object-cover">
+                <img src="{{ entry.item.image.url }}" alt="{{ entry.item.name }}" class="w-full h-full object-cover object-center">
                 {% else %}
-                <div class="w-full h-full flex items-center justify-center text-outline"><span class="material-symbols-outlined text-4xl">local_florist</span></div>
+                <div class="w-full h-full flex items-center justify-center text-outline"><span class="material-symbols-outlined text-5xl">local_florist</span></div>
                 {% endif %}
               </div>
               <div class="flex items-start justify-between gap-2">

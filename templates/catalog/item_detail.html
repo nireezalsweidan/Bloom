@@ -16,8 +16,8 @@
 <section class="max-w-[1320px] w-full mx-auto px-margin-mobile lg:px-margin py-space-md">
   <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter lg:gap-space-xl items-start">
 
-    <div class="lg:col-span-7 flex flex-col gap-space-md sticky top-28">
-      <div class="relative w-full aspect-[4/5] bg-surface-container-low rounded-xl overflow-hidden shadow-sm">
+    <div class="lg:col-span-6 flex flex-col gap-space-md">
+      <div class="relative w-full max-h-[480px] aspect-[4/5] bg-surface-container-low rounded-xl overflow-hidden shadow-sm">
         {% if item.image %}
         <img alt="{{ item.name }}" class="w-full h-full object-cover object-center" src="{{ item.image.url }}">
         {% else %}
@@ -33,19 +33,20 @@
       </div>
       {% if item.description %}
       <div class="bg-surface-container-low p-space-md rounded-xl">
+        <h4 class="font-label-sm text-label-sm text-secondary uppercase tracking-wider font-semibold mb-1.5">About This Bouquet</h4>
         <p class="font-body-md text-body-md text-on-surface">{{ item.description }}</p>
       </div>
       {% endif %}
     </div>
 
-    <div class="lg:col-span-5 flex flex-col gap-space-lg">
+    <div class="lg:col-span-6 flex flex-col gap-space-lg lg:sticky lg:top-28">
       <div class="space-y-2">
         <span class="font-label-sm text-label-sm text-secondary tracking-widest uppercase font-semibold">{{ item.category.name }}</span>
         <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">{{ item.name }}</h1>
         {% if item.tags.all %}
         <div class="flex flex-wrap gap-2 pt-1">
           {% for tag in item.tags.all %}
-          <span class="px-3 py-1 bg-surface-container-low text-primary rounded-full font-body-sm text-body-sm">{{ tag.name }}</span>
+          <span class="px-3 py-1 bg-tertiary-fixed text-on-tertiary-fixed rounded-full font-body-sm text-body-sm font-medium">{{ tag.name }}</span>
           {% endfor %}
         </div>
         {% endif %}
@@ -123,6 +124,7 @@
   function changeQuantity(delta) {
     currentQty = Math.max(1, currentQty + delta);
     document.getElementById('qtyDisplay').textContent = currentQty;
+    document.getElementById('cart-qty-input').value = currentQty;
   }
 </script>
 {% endblock %}

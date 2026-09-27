@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="w-full bg-gradient-to-b from-surface-container-low via-surface to-surface-container-low/40 py-space-md">
+<div class="w-full bg-gradient-to-b from-secondary-container/40 via-surface to-surface-container-low/40 py-space-md">
   <div class="max-w-[1320px] mx-auto px-margin-mobile lg:px-margin">
     <nav aria-label="Breadcrumb" class="flex items-center gap-2 mb-space-sm">
       <a class="font-body-sm text-body-sm text-secondary hover:text-primary transition-colors flex items-center gap-1" href="{% url 'home' %}">
@@ -12,8 +12,8 @@
     </nav>
     <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-space-md pb-space-lg">
       <div>
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary-container/60 text-on-secondary-container mb-space-xs shadow-sm">
-          <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container mb-space-xs shadow-sm">
+          <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
           <span class="font-label-sm text-label-sm tracking-wider uppercase">Dawn Harvest Catalogue</span>
         </div>
         <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">Botanical Collection &amp; Atelier Stems</h1>
@@ -21,8 +21,8 @@
           Carefully gathered from organic French and Tuscan soil.
         </p>
       </div>
-      <div class="px-4 py-2.5 rounded-full bg-surface-container-high text-primary font-label-md text-label-md flex items-center justify-center gap-2 whitespace-nowrap shadow-sm">
-        <span class="material-symbols-outlined text-sm text-secondary">eco</span>
+      <div class="px-4 py-2.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-md text-label-md flex items-center justify-center gap-2 whitespace-nowrap shadow-sm">
+        <span class="material-symbols-outlined text-sm">eco</span>
         <span>{{ paginator.count }} item{{ paginator.count|pluralize }} available</span>
       </div>
     </div>
@@ -34,7 +34,7 @@
   <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
 
     <aside class="lg:col-span-3 space-y-space-md">
-      <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm space-y-6">
+      <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm space-y-6 border-t-4 border-secondary">
         <div class="flex items-center justify-between pb-3">
           <div class="flex items-center gap-2">
             <span class="material-symbols-outlined text-primary text-xl">tune</span>
@@ -52,7 +52,7 @@
                 <input type="checkbox" name="category" value="{{ cat.slug }}" class="w-4 h-4 rounded text-primary accent-primary cursor-pointer" {% if cat.slug in selected_categories %}checked{% endif %}>
                 <span class="font-body-sm text-body-sm text-on-surface group-hover:text-primary transition-colors">{{ cat.name }}</span>
               </div>
-              <span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant">{{ cat.item_count }}</span>
+              <span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-semibold">{{ cat.item_count }}</span>
             </label>
             {% endfor %}
           </div>
@@ -64,7 +64,7 @@
             {% for tag in tags %}
             <label class="cursor-pointer">
               <input type="checkbox" name="tag" value="{{ tag.slug }}" class="hidden peer" {% if tag.slug in selected_tags %}checked{% endif %}>
-              <span class="px-3 py-1.5 rounded-full font-label-sm text-label-sm transition-colors inline-block peer-checked:bg-primary peer-checked:text-on-primary bg-surface-container text-on-surface hover:bg-surface-container-high">{{ tag.name }}</span>
+              <span class="px-3 py-1.5 rounded-full font-label-sm text-label-sm transition-colors inline-block peer-checked:bg-tertiary-fixed peer-checked:text-on-tertiary-fixed bg-surface-container text-on-surface hover:bg-surface-container-high">{{ tag.name }}</span>
             </label>
             {% endfor %}
           </div>
@@ -85,12 +85,12 @@
             <span class="font-body-sm text-body-sm text-primary font-medium">In Stock Only</span>
             <label class="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" name="in_stock" value="1" class="sr-only peer" {% if in_stock_only %}checked{% endif %}>
-              <div class="w-9 h-5 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+              <div class="w-9 h-5 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-secondary"></div>
             </label>
           </div>
         </div>
 
-        <button type="submit" class="w-full py-2.5 rounded-full bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors">Apply Filters</button>
+        <button type="submit" class="w-full py-2.5 rounded-full bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors shadow-sm">Apply Filters</button>
       </div>
     </aside>
 
@@ -102,7 +102,7 @@
         </div>
         <div class="flex items-center gap-3 self-end md:self-auto">
           <label class="font-label-sm text-label-sm text-outline uppercase font-semibold whitespace-nowrap" for="sort-select">Sort by</label>
-          <select name="sort" id="sort-select" onchange="this.form.submit()" class="appearance-none pl-3.5 pr-8 py-1.5 rounded-full bg-surface-container-low text-primary font-title-sm text-title-sm font-medium focus:outline-none focus:ring-2 focus:ring-secondary/40 cursor-pointer shadow-sm">
+          <select name="sort" id="sort-select" onchange="this.form.submit()" class="appearance-none pl-3.5 pr-8 py-1.5 rounded-full bg-secondary-container text-on-secondary-container font-title-sm text-title-sm font-medium focus:outline-none focus:ring-2 focus:ring-secondary/40 cursor-pointer shadow-sm">
             <option value="" {% if not sort %}selected{% endif %}>Featured</option>
             <option value="price_asc" {% if sort == "price_asc" %}selected{% endif %}>Price: Low to High</option>
             <option value="price_desc" {% if sort == "price_desc" %}selected{% endif %}>Price: High to Low</option>
@@ -114,16 +114,16 @@
       {% if selected_categories or selected_tags or query %}
       <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm flex flex-wrap items-center gap-2">
         <span class="font-label-sm text-label-sm text-outline uppercase font-semibold">Filtered by:</span>
-        {% if query %}<span class="px-3 py-1 rounded-full bg-surface-container-low text-primary font-body-sm text-body-sm">"{{ query }}"</span>{% endif %}
-        {% for cat in categories %}{% if cat.slug in selected_categories %}<span class="px-3 py-1 rounded-full bg-surface-container-low text-primary font-body-sm text-body-sm">{{ cat.name }}</span>{% endif %}{% endfor %}
-        {% for tag in tags %}{% if tag.slug in selected_tags %}<span class="px-3 py-1 rounded-full bg-surface-container-low text-primary font-body-sm text-body-sm">{{ tag.name }}</span>{% endif %}{% endfor %}
+        {% if query %}<span class="px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-body-sm text-body-sm">"{{ query }}"</span>{% endif %}
+        {% for cat in categories %}{% if cat.slug in selected_categories %}<span class="px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-body-sm text-body-sm">{{ cat.name }}</span>{% endif %}{% endfor %}
+        {% for tag in tags %}{% if tag.slug in selected_tags %}<span class="px-3 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-body-sm text-body-sm">{{ tag.name }}</span>{% endif %}{% endfor %}
         <a href="{% url 'catalog:item_list' %}" class="font-label-sm text-label-sm text-tertiary-container hover:text-tertiary transition-colors ml-1 font-semibold">Clear All</a>
       </div>
       {% endif %}
 
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {% for item in items %}
-        <div class="group flex flex-col bg-surface-container-lowest rounded-2xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
+        <div class="group flex flex-col bg-surface-container-lowest rounded-2xl p-4 shadow-sm hover:shadow-lg hover:ring-2 hover:ring-secondary/30 transition-all duration-300">
           <a href="{% url 'catalog:item_detail' slug=item.slug %}" class="relative w-full aspect-[4/5] rounded-xl overflow-hidden bg-[#F4EFEA] mb-4 block">
             {% if item.image %}
             <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="{{ item.image.url }}" alt="{{ item.name }}">
@@ -136,18 +136,17 @@
               {% if not item.in_stock %}
               <span class="px-2.5 py-1 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-semibold tracking-wider uppercase shadow-sm">Out of Stock</span>
               {% elif item.stock_quantity <= 5 %}
-              <span class="px-2.5 py-1 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-semibold tracking-wider uppercase shadow-sm">Limited Stock</span>
+              <span class="px-2.5 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm font-semibold tracking-wider uppercase shadow-sm">Limited Stock</span>
               {% else %}
-              <span class="px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold tracking-wider uppercase shadow-sm">In Stock</span>
+              <span class="px-2.5 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-semibold tracking-wider uppercase shadow-sm">In Stock</span>
               {% endif %}
             </div>
           </a>
           <div class="flex flex-col flex-1 justify-between">
             <div>
-              <div class="flex items-center gap-2 mb-1">
-                <span class="font-label-sm text-label-sm text-secondary uppercase font-semibold">{{ item.category.name }}</span>
+              <div class="flex flex-col gap-1 mb-1.5">
+                <span class="font-label-sm text-label-sm text-secondary uppercase font-bold tracking-wide">{{ item.category.name }}</span>
                 {% if item.tags.all %}
-                <span class="w-1 h-1 rounded-full bg-outline-variant"></span>
                 <span class="font-label-sm text-label-sm text-tertiary-container font-medium">{% for tag in item.tags.all %}{{ tag.name }}{% if not forloop.last %} &bull; {% endif %}{% endfor %}</span>
                 {% endif %}
               </div>
@@ -155,27 +154,26 @@
                 <a href="{% url 'catalog:item_detail' slug=item.slug %}">{{ item.name }}</a>
               </h3>
               <p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2 mt-1">{{ item.description }}</p>
+              <a href="{% url 'catalog:item_detail' slug=item.slug %}" class="inline-flex items-center gap-1 mt-2 font-label-md text-label-md text-secondary hover:text-primary font-semibold transition-colors group/link">
+                <span>View item details</span>
+                <span class="material-symbols-outlined text-sm group-hover/link:translate-x-1 transition-transform">arrow_forward</span>
+              </a>
             </div>
-            <div class="flex items-center justify-between pt-4 mt-4 bg-surface-container-low/30 -mx-4 -mb-4 px-4 py-3 rounded-b-2xl">
+            <div class="flex items-center justify-between pt-4 mt-4 bg-gradient-to-r from-secondary-container/30 to-transparent -mx-4 -mb-4 px-4 py-3 rounded-b-2xl">
               <div class="flex flex-col">
                 <span class="font-label-sm text-label-sm text-outline">Atelier Price</span>
                 <span class="font-price-lg text-price-lg text-primary font-bold">${{ item.price }}</span>
               </div>
               <div class="flex items-center gap-2">
-                <div class="flex items-center gap-2">
-                  <div class="qty-stepper flex items-center bg-surface-container-low rounded-full p-1">
-                    <button type="button" class="grid-qty-decrease w-6 h-6 rounded-full bg-surface-container-lowest text-primary hover:bg-surface-container flex items-center justify-center text-xs font-bold">&minus;</button>
-                    <span class="grid-qty w-6 text-center font-label-sm text-label-sm text-primary font-semibold">1</span>
-                    <button type="button" class="grid-qty-increase w-6 h-6 rounded-full bg-surface-container-lowest text-primary hover:bg-surface-container flex items-center justify-center text-xs font-bold">+</button>
-                  </div>
-                  <button type="button" {% if not item.in_stock %}disabled{% endif %} data-item-id="{{ item.id }}" data-item-name="{{ item.name }}" aria-label="Add {{ item.name }} to cart"
-                    class="add-to-cart-btn w-9 h-9 rounded-full bg-primary text-on-primary hover:bg-primary-container flex items-center justify-center transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                    <span class="material-symbols-outlined text-sm">add_shopping_cart</span>
-                  </button>
-                  <a href="{% url 'catalog:item_detail' slug=item.slug %}" class="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-surface-container text-primary font-label-md text-label-md hover:bg-surface-container-high transition-transform active:scale-95 shadow-sm">
-                    <span class="material-symbols-outlined text-sm">visibility</span>
-                  </a>
+                <div class="qty-stepper flex items-center bg-surface-container-lowest rounded-full p-1 shadow-sm">
+                  <button type="button" class="grid-qty-decrease w-6 h-6 rounded-full bg-surface-container text-primary hover:bg-surface-container-high flex items-center justify-center text-xs font-bold">&minus;</button>
+                  <span class="grid-qty w-6 text-center font-label-sm text-label-sm text-primary font-semibold">1</span>
+                  <button type="button" class="grid-qty-increase w-6 h-6 rounded-full bg-surface-container text-primary hover:bg-surface-container-high flex items-center justify-center text-xs font-bold">+</button>
                 </div>
+                <button type="button" {% if not item.in_stock %}disabled{% endif %} data-item-id="{{ item.id }}" data-item-name="{{ item.name }}" aria-label="Add {{ item.name }} to cart"
+                  class="add-to-cart-btn w-9 h-9 rounded-full bg-primary text-on-primary hover:bg-primary-container flex items-center justify-center transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                  <span class="material-symbols-outlined text-sm">add_shopping_cart</span>
+                </button>
               </div>
             </div>
           </div>
@@ -228,5 +226,4 @@ document.addEventListener('click', (e) => {
   }
 });
 </script>
-
 {% endblock %}

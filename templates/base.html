@@ -131,8 +131,23 @@ function postAddToCart(url, data) {
     },
     body: new URLSearchParams(data),
   })
-  .then(r => r.json())
+  .then(response => {
+    const contentType = response.headers.get('content-type') || '';
+    const wasRedirectedToLogin = response.redirected && response.url.includes('/accounts/login/');
+
+    if (wasRedirectedToLogin || !contentType.includes('application/json')) {
+      // @login_required bounced us to the login page instead of returning JSON
+      showToast('Please log in to add items to your cart.', true);
+      setTimeout(() => {
+        window.location.href = '/accounts/login/?next=' + encodeURIComponent(window.location.pathname);
+      }, 1200);
+      return null;
+    }
+
+    return response.json();
+  })
   .then(data => {
+    if (!data) return; // already handled as a login redirect above
     if (data.success) {
       showToast(data.message);
       updateCartBadge(data.cart_count, data.cart_total);

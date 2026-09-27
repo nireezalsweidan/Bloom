@@ -1,224 +1,1165 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="relative w-full max-w-[1320px] mx-auto px-margin-mobile lg:px-margin pb-space-xl overflow-hidden">
+<style>
+  .bloom-page {
+    background:
+      radial-gradient(circle at 8% 8%, rgba(216, 136, 128, 0.14), transparent 24%),
+      radial-gradient(circle at 92% 12%, rgba(170, 190, 155, 0.18), transparent 25%),
+      radial-gradient(circle at 50% 65%, rgba(245, 220, 211, 0.20), transparent 30%),
+      #FAF7F2;
+  }
 
-  <section class="pt-8 pb-10 text-center max-w-3xl mx-auto">
-    <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-surface-container-high text-primary mb-4 shadow-sm">
-      <span class="material-symbols-outlined text-sm text-secondary">auto_awesome</span>
-      <span class="font-label-sm text-label-sm uppercase tracking-wider font-semibold">Generative Botanical Engine</span>
-    </div>
-    <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight mb-4">Tell us the moment. We'll create the flowers.</h1>
-    <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">
-      Describe your occasion, style, and budget — our engine will recommend real flowers from our catalog, and you decide whether to keep them.
-    </p>
-  </section>
+  .bloom-glass {
+    background: rgba(255, 253, 249, 0.82);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
 
-  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+  .bloom-card {
+    border: 1px solid rgba(27, 56, 43, 0.07);
+    box-shadow:
+      0 12px 35px rgba(53, 67, 57, 0.07),
+      0 2px 8px rgba(53, 67, 57, 0.04);
+  }
 
-    <div class="lg:col-span-5 bg-surface-container-lowest rounded-xl p-6 sm:p-8 shadow-sm flex flex-col gap-7">
-      <form method="post" id="ai-generate-form" class="contents">
-        {% csrf_token %}
-        <input type="hidden" name="form_action" value="generate">
+  .bloom-card:hover {
+    box-shadow:
+      0 16px 42px rgba(53, 67, 57, 0.10),
+      0 3px 10px rgba(53, 67, 57, 0.05);
+  }
 
-        <div>
-          <label class="block font-title-sm text-title-sm text-primary mb-3 font-semibold">1. What is the occasion?</label>
-          <div class="flex flex-wrap gap-2">
-            {% for value, label in occasion_choices %}
-            <label class="cursor-pointer">
-              <input type="radio" name="occasion" value="{{ value }}" class="hidden peer" {% if forloop.first %}checked{% endif %} required>
-              <span class="px-3.5 py-1.5 rounded-full font-label-md text-label-md transition-all inline-block bg-surface-container text-on-surface hover:bg-surface-container-high peer-checked:bg-primary peer-checked:text-on-primary peer-checked:shadow-sm">{{ label }}</span>
-            </label>
-            {% endfor %}
-          </div>
-        </div>
+  .flower-orb {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(1px);
+    pointer-events: none;
+  }
 
-        <div>
-          <label class="block font-title-sm text-title-sm text-primary mb-3 font-semibold">2. Preferred Floral Aesthetic</label>
-          <div class="grid grid-cols-2 gap-3">
-            {% for value, label in style_choices %}
-            <label class="cursor-pointer">
-              <input type="radio" name="style" value="{{ value }}" class="hidden peer" {% if forloop.first %}checked{% endif %} required>
-              <div class="p-3.5 rounded-lg bg-surface-container-lowest peer-checked:bg-surface-container-low peer-checked:shadow-sm transition-all flex flex-col gap-2 h-full">
-                <div class="flex items-center justify-between">
-                  <span class="material-symbols-outlined text-secondary text-xl">spa</span>
-                  <div class="w-4 h-4 rounded-full bg-surface-container peer-checked:bg-primary"></div>
-                </div>
-                <h3 class="font-title-sm text-title-sm text-primary font-semibold">{{ label }}</h3>
-              </div>
-            </label>
-            {% endfor %}
-          </div>
-        </div>
+  .hero-title {
+    background: linear-gradient(
+      110deg,
+      #1B382B 10%,
+      #355C45 48%,
+      #B96F69 90%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
 
-        <div>
-          <label class="block font-title-sm text-title-sm text-primary mb-3 font-semibold">3. Chromatic Palette &amp; Mood</label>
-          <div class="space-y-2">
-            {% for palette in color_palette_choices %}
-            <label class="flex items-center justify-between p-3 rounded-lg bg-surface-container-lowest hover:bg-surface-container-low cursor-pointer transition-colors">
-              <div class="flex items-center gap-3">
-                <input class="accent-primary w-4 h-4" name="color_palette" type="radio" value="{{ palette }}" {% if forloop.first %}checked{% endif %}>
-                <span class="font-body-md text-body-md text-primary font-medium">{{ palette }}</span>
-              </div>
-            </label>
-            {% endfor %}
-          </div>
-        </div>
+  .occasion-pill input:checked + span {
+    background: #1B382B;
+    color: white;
+    border-color: #1B382B;
+    box-shadow: 0 5px 14px rgba(27, 56, 43, 0.18);
+    transform: translateY(-1px);
+  }
 
-        <div>
-          <div class="flex items-center justify-between mb-2">
-            <label class="font-title-sm text-title-sm text-primary font-semibold">4. Atelier Budget</label>
-            <span class="font-headline-sm text-headline-sm text-primary font-bold" id="budget-display">$95.00</span>
-          </div>
-          <input class="w-full h-2 bg-surface-container rounded-lg appearance-none cursor-pointer accent-primary" id="budget-range" name="budget" max="250" min="45" step="5" type="range" value="95" oninput="document.getElementById('budget-display').textContent = '$' + this.value + '.00'">
-          <div class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm mt-1.5">
-            <span>$45</span><span>$150</span><span>$250</span>
-          </div>
-        </div>
+  .occasion-pill span {
+    border: 1px solid rgba(27, 56, 43, 0.08);
+  }
 
-        <div>
-          <label class="font-title-sm text-title-sm text-primary font-semibold mb-2 block">5. Enclosed Card Message</label>
-          <div class="flex items-center gap-2 mb-2.5 flex-wrap">
-            {% for label, msg in card_tones %}
-            <button type="button" class="tone-btn text-on-surface bg-surface-container hover:bg-surface-container-high text-label-sm font-label-sm px-2.5 py-1 rounded-full" onclick="document.getElementById('card_tone_text').value = '{{ msg|safe|escapejs }}'">{{ label }}</button>
-            {% endfor %}
-          </div>
-          <textarea name="card_tone_text" id="card_tone_text" class="w-full p-3.5 rounded-lg bg-surface font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary resize-none" rows="3" placeholder="Write a note, or choose a tone above...">{{ card_tones.0.1 }}</textarea>
-        </div>
+  .style-option input:checked + div {
+    border-color: #D98880;
+    background: linear-gradient(145deg, #FFF9F7, #F9E9E5);
+    box-shadow: 0 8px 22px rgba(216, 136, 128, 0.14);
+  }
 
-        <div class="pt-2">
-          <button class="w-full py-4 rounded-full bg-primary text-on-primary font-title-sm text-title-sm font-semibold hover:bg-primary-container transition-all flex items-center justify-center gap-2.5 shadow-md" type="submit">
-            <span class="material-symbols-outlined text-xl text-secondary-fixed">auto_awesome</span>
-            <span>Generate My Bouquet</span>
-          </button>
-        </div>
-      </form>
-    </div>
+  .style-option input:checked + div .style-icon {
+    background: #D98880;
+    color: white;
+  }
 
-    <div class="lg:col-span-7 flex flex-col gap-6">
-      {% if latest_recommendation %}
-        {% if latest_recommendation.status == "generated" and latest_recommendation.output_data %}
-        <div class="bg-surface-container-lowest rounded-xl p-6 sm:p-8 shadow-sm flex flex-col gap-6">
-          <div class="flex flex-wrap items-center justify-between gap-3 pb-2">
-            <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-secondary-fixed/40 text-primary">
-              <span class="material-symbols-outlined text-sm">verified</span>
-              <span class="font-label-sm text-label-sm font-semibold uppercase tracking-wider">Recommendation Ready</span>
-            </div>
-          </div>
-          {% if latest_recommendation.generated_image %}
-          <div class="rounded-xl overflow-hidden bg-surface-container-low flex items-center justify-center max-h-[420px]">
-            <img src="{{ latest_recommendation.generated_image.url }}" alt="Illustrative preview of your bouquet" class="w-full max-h-[420px] object-contain">
-          </div>
-          <p class="font-label-sm text-label-sm text-outline text-center -mt-2">
-            This is a stylized illustration to give you a general sense of the shape and colors — not a photo of the actual flowers you'll receive.
-          </p>
-          {% endif %}
+  .style-option input:checked + div .style-check {
+    background: #1B382B;
+    border-color: #1B382B;
+  }
 
-          <div>
-            <span class="font-label-sm text-label-sm text-secondary uppercase tracking-widest font-semibold">AI Curated Composition</span>
-            <h3 class="font-headline-md text-headline-md text-primary font-semibold leading-tight mt-1">{{ latest_recommendation.get_occasion_display }} &middot; {{ latest_recommendation.get_style_display }}</h3>
-            <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">{{ latest_recommendation.output_data.style_reasoning }}</p>
-          </div>
+  .palette-option input:checked + div {
+    border-color: #D98880;
+    background: #FFF6F3;
+    box-shadow: 0 5px 16px rgba(216, 136, 128, 0.10);
+  }
 
-          <div class="p-4 rounded-lg bg-surface-container-low flex flex-col gap-1">
-            <div class="flex items-baseline justify-between">
-              <span class="font-price-lg text-price-lg text-primary font-bold">${{ latest_recommendation.output_data.total_price|floatformat:2 }}</span>
-              <span class="font-label-md text-label-md text-secondary font-semibold">Your budget: ${{ latest_recommendation.budget }}</span>
-            </div>
-          </div>
+  .palette-option input:checked + div .palette-dot {
+    transform: scale(1.12);
+    box-shadow: 0 0 0 4px rgba(216, 136, 128, 0.16);
+  }
 
-          <div>
-            <h4 class="font-title-sm text-title-sm text-primary font-semibold mb-3">Stem Recipe</h4>
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-              {% for flower in latest_recommendation.output_data.flowers %}
-              <div class="p-2.5 rounded-lg bg-surface-container-low flex items-center gap-2.5">
-                <div class="w-9 h-9 rounded-full bg-tertiary-fixed flex-shrink-0 flex items-center justify-center text-primary font-title-sm text-title-sm font-bold">{{ flower.quantity }}&times;</div>
-                <div class="min-w-0">
-                  <p class="font-title-sm text-title-sm text-primary font-semibold truncate">{{ flower.name }}</p>
-                  <p class="font-label-sm text-label-sm text-outline truncate">${{ flower.unit_price }} each</p>
-                </div>
-              </div>
-              {% endfor %}
-            </div>
-          </div>
+  .soft-divider {
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(27, 56, 43, 0.10),
+      transparent
+    );
+  }
 
-          {% if latest_recommendation.output_data.greeting_card_name %}
-          <div class="p-4 rounded-lg bg-surface-container-lowest shadow-sm flex items-center gap-3.5">
-            <span class="material-symbols-outlined text-2xl text-secondary flex-shrink-0">mark_email_read</span>
-            <div class="min-w-0">
-              <span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-semibold">{{ latest_recommendation.output_data.greeting_card_name }}</span>
-              <p class="font-headline-sm text-headline-sm text-primary italic mt-0.5">&ldquo;{{ latest_recommendation.output_data.card_message }}&rdquo;</p>
-            </div>
-          </div>
-          {% endif %}
+  .generate-button {
+    background: linear-gradient(110deg, #1B382B, #2F5942);
+    box-shadow:
+      0 12px 24px rgba(27, 56, 43, 0.20),
+      inset 0 1px rgba(255,255,255,0.12);
+  }
 
-          <div class="flex flex-col gap-2.5">
-            <form method="post" action="{% url 'ai_recommendations:accept' pk=latest_recommendation.pk %}">
-              {% csrf_token %}
-              <button type="submit" class="w-full py-3.5 px-5 rounded-full bg-primary text-on-primary font-title-sm text-title-sm font-semibold hover:bg-primary-container transition-all flex items-center justify-center gap-2 shadow-sm">
-                <span class="material-symbols-outlined text-lg">check_circle</span><span>Accept &amp; Save to My Bouquets</span>
-              </button>
-            </form>
-            <div class="grid grid-cols-2 gap-2">
-              <form method="post" action="{% url 'ai_recommendations:reject' pk=latest_recommendation.pk %}">
-                {% csrf_token %}
-                <button type="submit" class="w-full py-2.5 px-3 rounded-full bg-surface-container hover:bg-surface-container-high text-primary font-label-md text-label-md transition-colors flex items-center justify-center gap-1.5">
-                  <span class="material-symbols-outlined text-base">close</span><span>Reject</span>
-                </button>
-              </form>
-              <a href="{% url 'bouquets:design_new' %}" class="py-2.5 px-3 rounded-full bg-surface-container hover:bg-surface-container-high text-primary font-label-md text-label-md transition-colors flex items-center justify-center gap-1.5">
-                <span class="material-symbols-outlined text-base">tune</span><span>Fine-Tune in Studio</span>
-              </a>
-            </div>
-          </div>
-        </div>
+  .generate-button:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 16px 30px rgba(27, 56, 43, 0.25),
+      inset 0 1px rgba(255,255,255,0.15);
+  }
 
-        {% elif latest_recommendation.status == "failed" %}
-        <div class="bg-error-container text-on-error-container rounded-xl p-6 shadow-sm">
-          <p class="font-title-sm text-title-sm font-semibold mb-1">Generation failed</p>
-          <p class="font-body-sm text-body-sm">{{ latest_recommendation.error_message }}</p>
-        </div>
-        {% endif %}
-      {% else %}
-      <div class="bg-surface-container-lowest rounded-xl p-8 shadow-sm text-center text-on-surface-variant">
-        Fill in your preferences and click "Generate My Bouquet" to see a recommendation here.
-      </div>
-      {% endif %}
-    </div>
+  .image-frame {
+    background:
+      radial-gradient(circle at 30% 25%, rgba(255,255,255,0.95), transparent 32%),
+      radial-gradient(circle at 75% 75%, rgba(216,136,128,0.16), transparent 30%),
+      linear-gradient(145deg, #F4EEE8, #FFF9F5);
+  }
+
+  .history-card {
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+
+  .history-card:hover {
+    transform: translateY(-4px);
+  }
+</style>
+
+<div class="bloom-page relative w-full overflow-hidden">
+
+  <!-- Decorative botanical orbs -->
+
+  <div class="flower-orb w-40 h-40 bg-[#F3C8C2]/30 -left-20 top-20"></div>
+  <div class="flower-orb w-56 h-56 bg-[#C9D9C5]/30 -right-28 top-52"></div>
+  <div class="flower-orb w-32 h-32 bg-[#E9B7B0]/20 left-[42%] top-[35%]"></div>
+
+  <div class="relative w-full max-w-[1320px] mx-auto px-margin-mobile lg:px-margin pb-space-xl">
+
+<!-- ========================================================= -->
+<!-- HERO -->
+<!-- ========================================================= -->
+
+<section class="relative pt-10 lg:pt-14 pb-12 text-center max-w-4xl mx-auto">
+
+  <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 border border-[#D98880]/20 shadow-sm mb-5">
+
+    <span class="material-symbols-outlined text-base text-[#D98880]">
+      auto_awesome
+    </span>
+
+    <span class="font-label-sm text-label-sm uppercase tracking-[0.18em] font-semibold text-[#355C45]">
+      Bloom AI Atelier
+    </span>
+
+    <span class="w-1.5 h-1.5 rounded-full bg-[#D98880]"></span>
+
+    <span class="font-label-sm text-label-sm text-[#8A716D]">
+      Your bouquet, imagined
+    </span>
+
   </div>
 
-  {% if history %}
-  <section class="mt-14 pt-10">
-    <div class="flex items-center justify-between mb-6">
-      <h2 class="font-headline-md text-headline-md text-primary font-semibold">Your Recent Generations</h2>
-    </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      {% for rec in history %}
-      <div class="bg-surface-container-lowest rounded-xl p-4 shadow-sm flex flex-col gap-3">
-        <div class="flex items-center justify-between">
-          {% if rec.status == "accepted" %}
-          <span class="px-2.5 py-0.5 rounded-full bg-primary text-on-primary font-label-sm text-label-sm font-semibold">Accepted</span>
-          {% elif rec.status == "rejected" %}
-          <span class="px-2.5 py-0.5 rounded-full bg-surface-variant text-on-surface-variant font-label-sm text-label-sm font-semibold">Rejected</span>
-          {% elif rec.status == "failed" %}
-          <span class="px-2.5 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-semibold">Failed</span>
-          {% else %}
-          <span class="px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">Generated</span>
-          {% endif %}
-          {% if rec.output_data.total_price %}
-          <span class="font-label-sm text-label-sm font-bold text-primary">${{ rec.output_data.total_price|floatformat:2 }}</span>
-          {% endif %}
-        </div>
-        <div>
-          <h3 class="font-title-sm text-title-sm text-primary font-semibold">{{ rec.get_occasion_display }}</h3>
-          <p class="font-body-sm text-body-sm text-on-surface-variant">{{ rec.get_style_display }}</p>
-        </div>
-        <p class="font-label-sm text-label-sm text-on-surface-variant">{{ rec.created_at|date:"M j, Y" }}</p>
+
+  <h1 class="hero-title font-headline-lg text-headline-lg tracking-tight leading-[1.08] mb-5">
+    Tell us the moment.<br>
+    <span class="italic">We'll create the flowers.</span>
+  </h1>
+
+
+  <p class="font-body-lg text-body-lg text-[#6D716B] max-w-2xl mx-auto leading-relaxed">
+    Choose your mood, colors, occasion, and budget.
+    Bloom will curate a bouquet from our real floral collection,
+    just for your moment.
+  </p>
+
+
+  <div class="flex justify-center items-center gap-3 mt-7">
+
+    <div class="h-px w-12 bg-[#D98880]/30"></div>
+
+    <span class="material-symbols-outlined text-[#D98880] text-xl">
+      local_florist
+    </span>
+
+    <div class="h-px w-12 bg-[#D98880]/30"></div>
+
+  </div>
+
+</section>
+
+
+<!-- ========================================================= -->
+<!-- MAIN CONTENT -->
+<!-- ========================================================= -->
+
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+
+  <!-- ======================================================= -->
+  <!-- LEFT: DESIGN FORM -->
+  <!-- ======================================================= -->
+
+  <div class="lg:col-span-5 bloom-glass bloom-card rounded-[28px] p-6 sm:p-8">
+
+    <div class="flex items-center gap-3 mb-7">
+
+      <div class="w-11 h-11 rounded-2xl bg-[#F5DDD9] flex items-center justify-center">
+
+        <span class="material-symbols-outlined text-[#B96F69]">
+          edit_note
+        </span>
+
       </div>
-      {% endfor %}
+
+      <div>
+
+        <h2 class="font-title-lg text-title-lg text-[#1B382B] font-semibold">
+          Your floral brief
+        </h2>
+
+        <p class="font-label-sm text-label-sm text-[#8A8D87]">
+          A few details are all we need
+        </p>
+
+      </div>
+
     </div>
-  </section>
-  {% endif %}
+
+
+    <form method="post" id="ai-generate-form" class="flex flex-col gap-8">
+
+      {% csrf_token %}
+
+      <input type="hidden" name="form_action" value="generate">
+
+
+      <!-- =================================================== -->
+      <!-- OCCASION -->
+      <!-- =================================================== -->
+
+      <div>
+
+        <div class="flex items-center gap-2 mb-3">
+
+          <span class="flex items-center justify-center w-6 h-6 rounded-full bg-[#1B382B] text-white text-xs font-bold">
+            1
+          </span>
+
+          <label class="font-title-sm text-title-sm text-[#1B382B] font-semibold">
+            What's the occasion?
+          </label>
+
+        </div>
+
+
+        <div class="flex flex-wrap gap-2">
+
+          {% for value, label in occasion_choices %}
+
+          <label class="occasion-pill cursor-pointer">
+
+            <input
+              type="radio"
+              name="occasion"
+              value="{{ value }}"
+              class="hidden peer"
+              {% if forloop.first %}checked{% endif %}
+              required
+            >
+
+            <span class="px-4 py-2 rounded-full font-label-md text-label-md inline-block bg-[#F4F0EB] text-[#46534B] transition-all duration-200 hover:bg-[#EEE8E1]">
+              {{ label }}
+            </span>
+
+          </label>
+
+          {% endfor %}
+
+        </div>
+
+      </div>
+
+
+      <!-- =================================================== -->
+      <!-- STYLE -->
+      <!-- =================================================== -->
+
+      <div>
+
+        <div class="flex items-center gap-2 mb-3">
+
+          <span class="flex items-center justify-center w-6 h-6 rounded-full bg-[#1B382B] text-white text-xs font-bold">
+            2
+          </span>
+
+          <label class="font-title-sm text-title-sm text-[#1B382B] font-semibold">
+            Choose your floral mood
+          </label>
+
+        </div>
+
+
+        <div class="grid grid-cols-2 gap-3">
+
+          {% for value, label in style_choices %}
+
+          <label class="style-option cursor-pointer">
+
+            <input
+              type="radio"
+              name="style"
+              value="{{ value }}"
+              class="hidden peer"
+              {% if forloop.first %}checked{% endif %}
+              required
+            >
+
+
+            <div class="p-4 rounded-2xl bg-white border border-[#E8E2DB] transition-all duration-200 h-full">
+
+              <div class="flex items-center justify-between mb-3">
+
+                <span class="style-icon w-9 h-9 rounded-xl bg-[#F3ECE6] text-[#B96F69] flex items-center justify-center transition-all">
+
+                  <span class="material-symbols-outlined text-lg">
+                    spa
+                  </span>
+
+                </span>
+
+
+                <span class="style-check w-4 h-4 rounded-full border-2 border-[#D8D5CF] transition-all"></span>
+
+              </div>
+
+
+              <h3 class="font-title-sm text-title-sm text-[#1B382B] font-semibold">
+                {{ label }}
+              </h3>
+
+            </div>
+
+          </label>
+
+          {% endfor %}
+
+        </div>
+
+      </div>
+
+
+      <!-- =================================================== -->
+      <!-- PALETTE -->
+      <!-- =================================================== -->
+
+      <div>
+
+        <div class="flex items-center gap-2 mb-3">
+
+          <span class="flex items-center justify-center w-6 h-6 rounded-full bg-[#1B382B] text-white text-xs font-bold">
+            3
+          </span>
+
+          <label class="font-title-sm text-title-sm text-[#1B382B] font-semibold">
+            Pick your colors & mood
+          </label>
+
+        </div>
+
+
+        <div class="space-y-2">
+
+          {% for palette in color_palette_choices %}
+
+          <label class="palette-option cursor-pointer block">
+
+            <input
+              class="hidden peer"
+              name="color_palette"
+              type="radio"
+              value="{{ palette }}"
+              {% if forloop.first %}checked{% endif %}
+            >
+
+
+            <div class="flex items-center gap-3 p-3.5 rounded-2xl bg-white border border-[#E8E2DB] transition-all">
+
+              <div
+                class="palette-dot w-9 h-9 rounded-xl flex-shrink-0 transition-all
+                {% if forloop.counter == 1 %}
+                  bg-gradient-to-br from-[#E7A7A2] via-[#F3C7BE] to-[#FFF1E8]
+                {% elif forloop.counter == 2 %}
+                  bg-gradient-to-br from-[#E5C98B] via-[#F3DFB0] to-[#FFF6D9]
+                {% elif forloop.counter == 3 %}
+                  bg-gradient-to-br from-[#B7CBB7] via-[#D7E2D2] to-[#F1F5EC]
+                {% elif forloop.counter == 4 %}
+                  bg-gradient-to-br from-[#B7B7D8] via-[#DDD9EF] to-[#F6F1FA]
+                {% else %}
+                  bg-gradient-to-br from-[#D5A88C] via-[#E8C6B0] to-[#F7E7DA]
+                {% endif %}
+              "
+              ></div>
+
+
+              <span class="font-body-md text-body-md text-[#39483F] font-medium">
+                {{ palette }}
+              </span>
+
+
+              <span class="material-symbols-outlined ml-auto text-[#C5BEB7] text-lg">
+                chevron_right
+              </span>
+
+            </div>
+
+          </label>
+
+          {% endfor %}
+
+        </div>
+
+      </div>
+
+
+      <!-- =================================================== -->
+      <!-- BUDGET -->
+      <!-- =================================================== -->
+
+      <div>
+
+        <div class="flex items-center justify-between mb-3">
+
+          <div class="flex items-center gap-2">
+
+            <span class="flex items-center justify-center w-6 h-6 rounded-full bg-[#1B382B] text-white text-xs font-bold">
+              4
+            </span>
+
+            <label class="font-title-sm text-title-sm text-[#1B382B] font-semibold">
+              Your atelier budget
+            </label>
+
+          </div>
+
+
+          <span
+            class="font-headline-sm text-headline-sm text-[#B96F69] font-bold"
+            id="budget-display"
+          >
+            $95.00
+          </span>
+
+        </div>
+
+
+        <div class="bg-[#F6F1EC] rounded-2xl p-4">
+
+          <input
+            class="w-full h-2 bg-[#DDD7D0] rounded-lg appearance-none cursor-pointer accent-[#B96F69]"
+            id="budget-range"
+            name="budget"
+            max="250"
+            min="45"
+            step="5"
+            type="range"
+            value="95"
+            oninput="document.getElementById('budget-display').textContent = '$' + this.value + '.00'"
+          >
+
+
+          <div class="flex items-center justify-between text-[#8A8D87] font-label-sm text-label-sm mt-2">
+
+            <span>$45</span>
+            <span>$150</span>
+            <span>$250</span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- =================================================== -->
+      <!-- CARD MESSAGE -->
+      <!-- =================================================== -->
+
+      <div>
+
+        <div class="flex items-center gap-2 mb-3">
+
+          <span class="flex items-center justify-center w-6 h-6 rounded-full bg-[#1B382B] text-white text-xs font-bold">
+            5
+          </span>
+
+          <label class="font-title-sm text-title-sm text-[#1B382B] font-semibold">
+            What's the message?
+          </label>
+
+        </div>
+
+
+        <div class="flex items-center gap-2 mb-3 flex-wrap">
+
+          {% for label, msg in card_tones %}
+
+          <button
+            type="button"
+            class="text-[#6D514D] bg-[#F7E9E6] hover:bg-[#F1DCD8] border border-[#EED3CE] text-label-sm font-label-sm px-3 py-1.5 rounded-full transition-all"
+            onclick="document.getElementById('card_tone_text').value = '{{ msg|safe|escapejs }}'"
+          >
+            {{ label }}
+          </button>
+
+          {% endfor %}
+
+        </div>
+
+
+        <textarea
+          name="card_tone_text"
+          id="card_tone_text"
+          class="w-full p-4 rounded-2xl bg-white border border-[#E8E2DB] font-body-sm text-body-sm text-[#39483F] focus:outline-none focus:ring-2 focus:ring-[#D98880]/30 focus:border-[#D98880] resize-none transition-all"
+          rows="3"
+          placeholder="Write a heartfelt note, or choose a tone above..."
+        >{{ card_tones.0.1 }}</textarea>
+
+      </div>
+
+
+      <div class="soft-divider"></div>
+
+
+      <!-- =================================================== -->
+      <!-- SUBMIT -->
+      <!-- =================================================== -->
+
+      <button
+        class="generate-button w-full py-4 rounded-2xl text-white font-title-sm text-title-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2.5"
+        type="submit"
+      >
+
+        <span class="material-symbols-outlined text-xl text-[#F4C5BE]">
+          auto_awesome
+        </span>
+
+        <span>Create My Bloom</span>
+
+        <span class="material-symbols-outlined text-lg">
+          arrow_forward
+        </span>
+
+      </button>
+
+
+      <p class="text-center text-[#92948E] font-label-sm text-label-sm -mt-4">
+        Curated from Bloom's real flower collection
+      </p>
+
+    </form>
+
+  </div>
+
+
+  <!-- ======================================================= -->
+  <!-- RIGHT: RESULT -->
+  <!-- ======================================================= -->
+
+  <div class="lg:col-span-7 flex flex-col gap-6">
+
+
+    <!-- ===================================================== -->
+    <!-- IMPORTANT:
+         ONLY SHOW GENERATED RESULT IF THERE IS ACTUALLY
+         A GENERATED RECOMMENDATION.
+    -->
+    <!-- ===================================================== -->
+
+    {% if latest_recommendation and latest_recommendation.status == "generated" and latest_recommendation.output_data %}
+
+
+      <!-- =================================================== -->
+      <!-- GENERATED RESULT -->
+      <!-- =================================================== -->
+
+      <div class="bloom-glass bloom-card rounded-[28px] p-6 sm:p-8 flex flex-col gap-6">
+
+
+        <!-- RESULT HEADER -->
+
+        <div class="flex items-center justify-between gap-3">
+
+          <div class="flex items-center gap-3">
+
+            <div class="w-11 h-11 rounded-2xl bg-[#E1EBDC] flex items-center justify-center">
+
+              <span class="material-symbols-outlined text-[#456A51]">
+                local_florist
+              </span>
+
+            </div>
+
+
+            <div>
+
+              <span class="font-label-sm text-label-sm text-[#6B7D70] uppercase tracking-[0.15em] font-semibold">
+                AI Curated
+              </span>
+
+              <h2 class="font-title-lg text-title-lg text-[#1B382B] font-semibold">
+                Your Bloom
+              </h2>
+
+            </div>
+
+          </div>
+
+
+          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#E5F0E4] text-[#456A51] font-label-sm text-label-sm font-semibold">
+
+            <span class="w-1.5 h-1.5 rounded-full bg-[#6A9A72]"></span>
+
+            Ready
+
+          </span>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- GENERATED IMAGE -->
+        <!-- ================================================= -->
+
+        {% if latest_recommendation.generated_image %}
+
+        <div class="image-frame rounded-[24px] overflow-hidden border border-[#E9DED7] p-3">
+
+          <div class="rounded-[18px] overflow-hidden bg-white flex items-center justify-center max-h-[460px]">
+
+            <img
+              src="{{ latest_recommendation.generated_image.url }}"
+              alt="AI generated bouquet"
+              class="w-full max-h-[460px] object-contain"
+            >
+
+          </div>
+
+        </div>
+
+
+        <p class="font-label-sm text-label-sm text-[#99928C] text-center -mt-2 px-4">
+          A visual interpretation of your bouquet's shape, colors, and overall mood.
+        </p>
+
+        {% endif %}
+
+
+        <!-- ================================================= -->
+        <!-- COMPOSITION -->
+        <!-- ================================================= -->
+
+        <div class="pt-1">
+
+          <span class="font-label-sm text-label-sm text-[#B96F69] uppercase tracking-[0.18em] font-semibold">
+            AI Curated Composition
+          </span>
+
+
+          <h3 class="font-headline-md text-headline-md text-[#1B382B] font-semibold leading-tight mt-2">
+
+            {{ latest_recommendation.get_occasion_display }}
+
+            <span class="text-[#C8B7B0]">·</span>
+
+            {{ latest_recommendation.get_style_display }}
+
+          </h3>
+
+
+          <p class="font-body-sm text-body-sm text-[#6D716B] mt-2 leading-relaxed">
+            {{ latest_recommendation.output_data.style_reasoning }}
+          </p>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- PRICE -->
+        <!-- ================================================= -->
+
+        <div class="rounded-2xl bg-gradient-to-r from-[#F5E8E4] to-[#F1EADF] p-5">
+
+          <div class="flex items-baseline justify-between gap-3">
+
+            <div>
+
+              <p class="font-label-sm text-label-sm uppercase tracking-wider text-[#8A716D]">
+                Estimated total
+              </p>
+
+              <span class="font-price-lg text-price-lg text-[#1B382B] font-bold">
+                ${{ latest_recommendation.output_data.total_price|floatformat:2 }}
+              </span>
+
+            </div>
+
+
+            <div class="text-right">
+
+              <p class="font-label-sm text-label-sm text-[#8A8D87]">
+                Your budget
+              </p>
+
+              <span class="font-title-sm text-title-sm text-[#B96F69] font-bold">
+                ${{ latest_recommendation.budget }}
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- STEM RECIPE -->
+        <!-- ================================================= -->
+
+        <div>
+
+          <div class="flex items-center justify-between mb-3">
+
+            <h4 class="font-title-sm text-title-sm text-[#1B382B] font-semibold">
+              Your stem recipe
+            </h4>
+
+
+            <span class="font-label-sm text-label-sm text-[#A09A93]">
+              {{ latest_recommendation.output_data.flowers|length }} varieties
+            </span>
+
+          </div>
+
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+            {% for flower in latest_recommendation.output_data.flowers %}
+
+            <div class="p-3 rounded-2xl bg-white border border-[#EAE3DC] flex items-center gap-3 hover:border-[#D98880]/40 transition-all">
+
+              <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-[#F2D7D2] to-[#EADDD3] flex-shrink-0 flex items-center justify-center text-[#8C5C58] font-title-sm text-title-sm font-bold">
+
+                {{ flower.quantity }}×
+
+              </div>
+
+
+              <div class="min-w-0">
+
+                <p class="font-title-sm text-title-sm text-[#1B382B] font-semibold truncate">
+                  {{ flower.name }}
+                </p>
+
+                <p class="font-label-sm text-label-sm text-[#96918B] truncate">
+                  ${{ flower.unit_price }} each
+                </p>
+
+              </div>
+
+            </div>
+
+            {% endfor %}
+
+          </div>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- GREETING CARD -->
+        <!-- ================================================= -->
+
+        {% if latest_recommendation.output_data.greeting_card_name %}
+
+        <div class="relative overflow-hidden p-5 rounded-2xl bg-[#FFF5F1] border border-[#F0D9D3]">
+
+          <div class="absolute -right-6 -top-8 w-24 h-24 rounded-full bg-[#E8B5AE]/20"></div>
+
+
+          <div class="relative flex items-start gap-4">
+
+            <div class="w-10 h-10 rounded-xl bg-[#F0D6D1] flex items-center justify-center flex-shrink-0">
+
+              <span class="material-symbols-outlined text-[#B96F69]">
+                mail
+              </span>
+
+            </div>
+
+
+            <div class="min-w-0">
+
+              <span class="font-label-sm text-label-sm uppercase tracking-wider text-[#B96F69] font-semibold">
+                {{ latest_recommendation.output_data.greeting_card_name }}
+              </span>
+
+
+              <p class="font-headline-sm text-headline-sm text-[#4B403D] italic mt-1 leading-relaxed">
+                &ldquo;{{ latest_recommendation.output_data.card_message }}&rdquo;
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {% endif %}
+
+
+        <!-- ================================================= -->
+        <!-- ACTIONS -->
+        <!-- ================================================= -->
+
+        <div class="pt-1 flex flex-col gap-3">
+
+
+          <form
+            method="post"
+            action="{% url 'ai_recommendations:accept' pk=latest_recommendation.pk %}"
+          >
+
+            {% csrf_token %}
+
+
+            <button
+              type="submit"
+              class="w-full py-4 px-5 rounded-2xl bg-[#1B382B] text-white font-title-sm text-title-sm font-semibold hover:bg-[#2D5941] transition-all flex items-center justify-center gap-2 shadow-md"
+            >
+
+              <span class="material-symbols-outlined text-lg">
+                check_circle
+              </span>
+
+              <span>
+                Accept & Save to My Bouquets
+              </span>
+
+            </button>
+
+          </form>
+
+
+          <div class="grid grid-cols-2 gap-3">
+
+
+            <form
+              method="post"
+              action="{% url 'ai_recommendations:reject' pk=latest_recommendation.pk %}"
+            >
+
+              {% csrf_token %}
+
+
+              <button
+                type="submit"
+                class="w-full py-3 rounded-2xl bg-white border border-[#E5DED7] hover:bg-[#F8F3EF] text-[#566057] font-label-md text-label-md transition-all flex items-center justify-center gap-1.5"
+              >
+
+                <span class="material-symbols-outlined text-base">
+                  close
+                </span>
+
+                <span>
+                  Reject
+                </span>
+
+              </button>
+
+            </form>
+
+
+            <a
+              href="{% url 'bouquets:design_new' %}"
+              class="py-3 rounded-2xl bg-[#F7E8E4] hover:bg-[#F0DAD5] text-[#8B5D58] font-label-md text-label-md transition-all flex items-center justify-center gap-1.5"
+            >
+
+              <span class="material-symbols-outlined text-base">
+                tune
+              </span>
+
+              <span>
+                Fine-Tune
+              </span>
+
+            </a>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+    <!-- ===================================================== -->
+    <!-- FAILED GENERATION -->
+    <!-- ===================================================== -->
+
+    {% elif latest_recommendation and latest_recommendation.status == "failed" %}
+
+
+      <div class="bloom-glass bloom-card rounded-[28px] p-8 bg-[#FFF7F5] border border-[#F0D2CC]">
+
+        <div class="flex items-start gap-4">
+
+          <div class="w-12 h-12 rounded-2xl bg-[#F4D8D3] flex items-center justify-center flex-shrink-0">
+
+            <span class="material-symbols-outlined text-[#B96F69]">
+              flower
+            </span>
+
+          </div>
+
+
+          <div>
+
+            <p class="font-title-sm text-title-sm text-[#713F3A] font-semibold mb-1">
+              We couldn't create your Bloom this time
+            </p>
+
+
+            <p class="font-body-sm text-body-sm text-[#8A625D]">
+              {{ latest_recommendation.error_message }}
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+    <!-- ===================================================== -->
+    <!-- EMPTY STATE -->
+    <!-- ===================================================== -->
+
+    {% else %}
+
+
+      <div class="bloom-glass bloom-card rounded-[28px] p-10 sm:p-14 text-center min-h-[600px] flex flex-col items-center justify-center">
+
+
+        <div class="relative mb-7">
+
+          <div class="absolute inset-0 rounded-full bg-[#D98880]/10 blur-2xl scale-150"></div>
+
+
+          <div class="relative w-28 h-28 rounded-full bg-gradient-to-br from-[#F6DCD7] via-[#F4E6DE] to-[#E1EBDC] flex items-center justify-center">
+
+            <span class="material-symbols-outlined text-5xl text-[#B96F69]">
+              local_florist
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <span class="font-label-sm text-label-sm uppercase tracking-[0.18em] text-[#B96F69] font-semibold mb-3">
+          Your canvas is waiting
+        </span>
+
+
+        <h2 class="font-headline-md text-headline-md text-[#1B382B] font-semibold">
+          Let's make something beautiful.
+        </h2>
+
+
+        <p class="font-body-md text-body-md text-[#72766F] max-w-md mt-3 leading-relaxed">
+          Tell us about your moment and Bloom will create a personalized floral composition using flowers from our collection.
+        </p>
+
+
+        <div class="flex items-center gap-2 mt-7 text-[#9B938B]">
+
+          <span class="material-symbols-outlined text-lg">
+            palette
+          </span>
+
+          <span class="font-label-sm text-label-sm">
+            Colors
+          </span>
+
+
+          <span class="mx-2 text-[#D5CEC7]">
+            •
+          </span>
+
+
+          <span class="material-symbols-outlined text-lg">
+            spa
+          </span>
+
+          <span class="font-label-sm text-label-sm">
+            Flowers
+          </span>
+
+
+          <span class="mx-2 text-[#D5CEC7]">
+            •
+          </span>
+
+
+          <span class="material-symbols-outlined text-lg">
+            auto_awesome
+          </span>
+
+          <span class="font-label-sm text-label-sm">
+            AI
+          </span>
+
+        </div>
+
+      </div>
+
+
+    {% endif %}
+
+  </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- HISTORY -->
+<!-- ========================================================= -->
+
+{% if history %}
+
+<section class="mt-16 pt-10">
+
+  <div class="soft-divider mb-10"></div>
+
+
+  <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6">
+
+    <div>
+
+      <span class="font-label-sm text-label-sm uppercase tracking-[0.18em] text-[#B96F69] font-semibold">
+        Your creative archive
+      </span>
+
+
+      <h2 class="font-headline-md text-headline-md text-[#1B382B] font-semibold mt-1">
+        Recent Blooms
+      </h2>
+
+    </div>
+
+
+    <p class="font-label-sm text-label-sm text-[#8B8D87]">
+      Your latest AI creations
+    </p>
+
+  </div>
+
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+
+
+    {% for rec in history %}
+
+
+    <div class="history-card bloom-glass bloom-card rounded-[22px] p-5 flex flex-col gap-4">
+
+
+      <div class="flex items-center justify-between">
+
+
+        {% if rec.status == "accepted" %}
+
+        <span class="px-3 py-1 rounded-full bg-[#E2EDE1] text-[#4B6952] font-label-sm text-label-sm font-semibold">
+          Accepted
+        </span>
+
+
+        {% elif rec.status == "rejected" %}
+
+        <span class="px-3 py-1 rounded-full bg-[#F0ECE8] text-[#77736E] font-label-sm text-label-sm font-semibold">
+          Rejected
+        </span>
+
+
+        {% elif rec.status == "failed" %}
+
+        <span class="px-3 py-1 rounded-full bg-[#F7DFDB] text-[#9B5C55] font-label-sm text-label-sm font-semibold">
+          Failed
+        </span>
+
+
+        {% else %}
+
+        <span class="px-3 py-1 rounded-full bg-[#F3E4E0] text-[#A3635D] font-label-sm text-label-sm font-semibold">
+          Generated
+        </span>
+
+        {% endif %}
+
+
+        {% if rec.output_data.total_price %}
+
+        <span class="font-label-sm text-label-sm font-bold text-[#1B382B]">
+          ${{ rec.output_data.total_price|floatformat:2 }}
+        </span>
+
+        {% endif %}
+
+      </div>
+
+
+      <div>
+
+        <h3 class="font-title-sm text-title-sm text-[#1B382B] font-semibold">
+          {{ rec.get_occasion_display }}
+        </h3>
+
+
+        <p class="font-body-sm text-body-sm text-[#747871] mt-0.5">
+          {{ rec.get_style_display }}
+        </p>
+
+      </div>
+
+
+      <div class="flex items-center gap-1.5 text-[#A09A93]">
+
+        <span class="material-symbols-outlined text-sm">
+          calendar_today
+        </span>
+
+
+        <p class="font-label-sm text-label-sm">
+          {{ rec.created_at|date:"M j, Y" }}
+        </p>
+
+      </div>
+
+
+    </div>
+
+
+    {% endfor %}
+
+  </div>
+
+</section>
+
+{% endif %}
+
+  </div>
+
 </div>
 
 {% endblock %}

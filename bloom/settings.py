@@ -13,6 +13,9 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 
+from dotenv import load_dotenv
+load_dotenv()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -51,8 +54,10 @@ AUTH_USER_MODEL = "accounts.User"
 
 AI_PROVIDER = os.environ.get("AI_PROVIDER", "mock")  # "mock", "gemini", or "anthropic"
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+AI_IMAGE_PROVIDER = os.getenv("AI_IMAGE_PROVIDER", "huggingface")
 
-AI_IMAGE_PROVIDER = os.environ.get("AI_IMAGE_PROVIDER", "mock")  # "mock", "gemini", or "openai"
+HF_TOKEN = os.getenv("HF_TOKEN", "")
+
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
 
 LOGIN_URL = "login"

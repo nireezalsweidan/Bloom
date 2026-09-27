@@ -70,7 +70,15 @@
     <article class="bouquet-card bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group"
       data-type="{{ bouquet.status }} {% if bouquet.source == 'ai' %}ai{% endif %}">
       <div class="relative w-full h-56 overflow-hidden bg-surface-container flex items-center justify-center">
-        <span class="material-symbols-outlined text-6xl text-outline">local_florist</span>
+        {% if bouquet.ai_recommendation.generated_image %}
+            <img
+                src="{{ bouquet.ai_recommendation.generated_image.url }}"
+                alt="{{ bouquet.get_occasion_display }} bouquet"
+                class="w-full h-full object-cover"
+            >
+        {% else %}
+            <span class="material-symbols-outlined text-6xl text-outline">local_florist</span>
+        {% endif %}
         <div class="absolute top-4 left-4 flex flex-wrap items-center gap-2">
           {% if bouquet.status == "saved" %}
           <span class="px-3 py-1 rounded-full bg-surface-container-lowest/90 backdrop-blur-md text-primary font-label-sm text-label-sm font-semibold shadow-sm">SAVED</span>

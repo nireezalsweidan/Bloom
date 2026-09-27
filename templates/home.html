@@ -66,7 +66,7 @@
       </div>
       <div class="p-5 rounded-xl bg-surface-container-lowest shadow-sm flex items-start gap-3.5">
         <div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-primary flex-shrink-0"><span class="material-symbols-outlined text-xl text-secondary">psychology_alt</span></div>
-        <div><h3 class="font-title-sm text-title-sm text-primary font-semibold mb-1">AI Stem Harmony</h3><p class="font-body-sm text-body-sm text-on-surface-variant">Coming soon: algorithmic color and style curation.</p></div>
+        <div><h3 class="font-title-sm text-title-sm text-primary font-semibold mb-1">AI Stem Harmony</h3><p class="font-body-sm text-body-sm text-on-surface-variant">Algorithmic color and style curation.</p></div>
       </div>
       <div class="p-5 rounded-xl bg-surface-container-lowest shadow-sm flex items-start gap-3.5">
         <div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-primary flex-shrink-0"><span class="material-symbols-outlined text-xl text-secondary">handyman</span></div>
@@ -117,10 +117,10 @@
     <div class="bg-surface-container-lowest rounded-3xl p-6 sm:p-10 lg:p-12 shadow-xl relative overflow-hidden">
       <div class="relative z-10 max-w-3xl mb-space-lg">
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm font-semibold mb-space-sm">
-          <span class="material-symbols-outlined text-xs">magic_button</span><span>Coming Soon</span>
+          <span class="material-symbols-outlined text-xs">magic_button</span><span>Try It Now</span>
         </div>
         <h2 class="font-headline-lg text-headline-lg text-primary tracking-tight font-normal mb-3">Design through feeling. Let AI translate emotion into blossoms.</h2>
-        <p class="font-body-lg text-body-lg text-on-surface-variant">Describe the memory, recipient, or feeling, and our AI will suggest a matching bouquet from our catalog. This feature is launching soon &mdash; for now, try our manual Bouquet Studio.</p>
+        <p class="font-body-lg text-body-lg text-on-surface-variant">Describe your occasion, style, and budget, and our AI will suggest a matching bouquet from our real catalog. You always review before anything is saved.</p>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-space-xl">
         <div class="p-6 rounded-2xl bg-surface-container/60">
@@ -139,17 +139,9 @@
           <p class="font-body-sm text-body-sm text-on-surface-variant">Nothing is added to your bouquets without your approval.</p>
         </div>
       </div>
-      <div class="p-3 sm:p-4 rounded-2xl bg-surface-container-high/60 backdrop-blur-md shadow-inner">
-        <form class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3" onsubmit="event.preventDefault(); alert('The AI Floral Designer is coming soon! Try the Bouquet Studio in the meantime.');">
-          <div class="flex-1 flex items-center gap-3 px-4 py-3 rounded-full bg-surface-container-lowest shadow-sm">
-            <span class="material-symbols-outlined text-secondary text-xl flex-shrink-0">auto_awesome</span>
-            <input class="w-full bg-transparent text-primary font-body-md text-body-md placeholder:text-outline focus:outline-none" placeholder="Describe your recipient, feeling, or dream aesthetic..." type="text">
-          </div>
-          <button class="px-8 py-3.5 rounded-full bg-primary text-on-primary font-title-sm text-title-sm font-medium hover:bg-primary-container transition-all flex items-center justify-center gap-2 shadow-md flex-shrink-0" type="submit">
-            <span>Generate Bouquet</span>
-          </button>
-        </form>
-      </div>
+      <a href="{% url 'ai_recommendations:designer' %}" class="w-full py-4 rounded-full bg-primary text-on-primary font-title-sm text-title-sm font-semibold hover:bg-primary-container transition-all flex items-center justify-center gap-2.5 shadow-md">
+        <span class="material-symbols-outlined text-xl text-secondary-fixed">auto_awesome</span><span>Try the AI Floral Designer</span>
+      </a>
     </div>
   </div>
 </section>
@@ -186,13 +178,15 @@
         <div class="mt-5 pt-3 flex items-center justify-between">
           <span class="font-price-lg text-price-lg text-primary font-bold">${{ item.price }}</span>
           <div class="flex items-center gap-2">
-            <a class="px-3 py-1.5 rounded-full bg-surface-container text-primary hover:bg-surface-container-high font-label-sm text-label-sm font-semibold transition-colors" href="{% url 'bouquets:design_new' %}">Customize</a>
-            <form method="post" action="{% url 'cart:add_item' item_id=item.id %}">
-              {% csrf_token %}
-              <button type="submit" aria-label="Add to cart" class="w-9 h-9 rounded-full bg-primary text-on-primary hover:bg-primary-container flex items-center justify-center transition-colors shadow-sm">
-                <span class="material-symbols-outlined text-sm">add_shopping_cart</span>
-              </button>
-            </form>
+            <div class="qty-stepper flex items-center bg-surface-container-low rounded-full p-1">
+              <button type="button" class="grid-qty-decrease w-6 h-6 rounded-full bg-surface-container-lowest text-primary hover:bg-surface-container flex items-center justify-center text-xs font-bold">&minus;</button>
+              <span class="grid-qty w-6 text-center font-label-sm text-label-sm text-primary font-semibold">1</span>
+              <button type="button" class="grid-qty-increase w-6 h-6 rounded-full bg-surface-container-lowest text-primary hover:bg-surface-container flex items-center justify-center text-xs font-bold">+</button>
+            </div>
+            <button type="button" {% if not item.in_stock %}disabled{% endif %} data-item-id="{{ item.id }}" data-item-name="{{ item.name }}" aria-label="Add {{ item.name }} to cart"
+              class="add-to-cart-btn w-9 h-9 rounded-full bg-primary text-on-primary hover:bg-primary-container flex items-center justify-center transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+              <span class="material-symbols-outlined text-sm">add_shopping_cart</span>
+            </button>
           </div>
         </div>
       </div>
@@ -234,4 +228,27 @@
   </div>
 </section>
 
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('click', (e) => {
+  if (e.target.closest('.grid-qty-decrease')) {
+    const qtyEl = e.target.closest('.qty-stepper').querySelector('.grid-qty');
+    qtyEl.textContent = Math.max(1, parseInt(qtyEl.textContent) - 1);
+  }
+  if (e.target.closest('.grid-qty-increase')) {
+    const qtyEl = e.target.closest('.qty-stepper').querySelector('.grid-qty');
+    qtyEl.textContent = parseInt(qtyEl.textContent) + 1;
+  }
+  const addBtn = e.target.closest('.add-to-cart-btn');
+  if (addBtn) {
+    const itemId = addBtn.dataset.itemId;
+    const card = addBtn.closest('.flex.flex-col');
+    const qtyEl = card ? card.querySelector('.grid-qty') : null;
+    const qty = qtyEl ? qtyEl.textContent.trim() : 1;
+    addItemToCart(itemId, qty);
+  }
+});
+</script>
 {% endblock %}
